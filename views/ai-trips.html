@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TripAdvisor • AI Trips</title>
+
+  <!-- global styles -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root {
+      --ai-bg: #020617;
+      --ai-card: #020617f2;
+      --ai-border: #1f2937;
+      --ai-muted: #9ca3af;
+      --ai-primary: #2563eb;
+      --ai-primary-dark: #1d4ed8;
+      --ai-success: #22c55e;
+    }
+
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Poppins",sans-serif;
+    }
+
+    .ai-shell {
+      max-width: 1100px;
+      margin: 96px auto 40px;
+      padding: 0 20px;
+    }
+
+    .ai-header {
+      margin-bottom: 18px;
+    }
+    .ai-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .ai-sub {
+      font-size: 14px;
+      color: var(--ai-muted);
+    }
+
+    .ai-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.3fr);
+      gap: 20px;
+    }
+
+    .ai-card {
+      background: linear-gradient(135deg, #020617f8, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 18px 18px 16px;
+    }
+
+    .ai-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    .ai-card-title {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .ai-card-pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.4);
+      color: var(--ai-muted);
+      background: rgba(15,23,42,.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ai-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--ai-success);
+    }
+    .ai-card-sub {
+      font-size: 13px;
+      color: var(--ai-muted);
+      margin-bottom: 12px;
+    }
+
+    /* chat panel */
+    .ai-chat-shell {
+      display: flex;
+      flex-direction: column;
+      height: 380px;
+    }
+    .ai-chat-log {
+      flex: 1;
+      border-radius: 14px;
+      border: 1px solid rgba(31,41,55,.9);
+      background: radial-gradient(circle at top left, rgba(15,23,42,.96), #020617);
+      padding: 10px 10px 8px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+    .ai-msg {
+      max-width: 78%;
+      margin-bottom: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      line-height: 1.4;
+    }
+    .ai-msg-user {
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+      background: linear-gradient(135deg,var(--ai-primary),var(--ai-primary-dark));
+    }
+    .ai-msg-bot {
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+      background: rgba(15,23,42,.96);
+      border: 1px solid rgba(55,65,81,.9);
+      color: #e5e7eb;
+    }
+    .ai-msg-meta {
+      display: block;
+      font-size: 10px;
+      color: var(--ai-muted);
+      margin-top: 2px;
+    }
+
+    .ai-chat-input-row {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .ai-input {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--ai-border);
+      background: #020617;
+      color: #f9fafb;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .ai-input::placeholder {
+      color: #6b7280;
+    }
+    .ai-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(37,99,235,.55),0 0 0 6px rgba(37,99,235,.18);
+    }
+
+    .ai-btn-primary {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      background: linear-gradient(135deg,var(--ai-primary),var(--ai-primary-dark));
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow: 0 12px 26px rgba(37,99,235,.55);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+      white-space: nowrap;
+    }
+    .ai-btn-primary:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(37,99,235,.6);
+    }
+    .ai-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 20px rgba(37,99,235,.45);
+    }
+
+    /* call card */
+    .ai-call-list {
+      margin: 6px 0 12px;
+      padding-left: 18px;
+      font-size: 13px;
+      color: var(--ai-muted);
+    }
+    .ai-call-list li {
+      margin-bottom: 4px;
+    }
+
+    .ai-call-meta {
+      font-size: 11px;
+      color: var(--ai-muted);
+      margin-top: 6px;
+    }
+
+    .ai-btn-ghost {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.5);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      cursor: pointer;
+      color: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .ai-btn-ghost:hover {
+      border-color: rgba(148,163,184,.9);
+      background: rgba(15,23,42,.9);
+    }
+
+    .ai-call-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .ai-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(15,23,42,.96);
+      border: 1px solid rgba(148,163,184,.6);
+      color: #e5e7eb;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,.6);
+      z-index: 40;
+    }
+    .ai-toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+
+    /* highlight active nav link (Dashboard / AI Trips / About / Logout) */
+    .link.active {
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .ai-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .ai-chat-shell {
+        height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- main nav (same structure as dashboard / booking) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripAdvisor</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/ai-trips" class="link active">AI Trips</a>
+        <a href="/about" class="link">About</a>
+        <a href="/profile" class="link">Profile</a>
+        <!-- Logout styled same as other nav links -->
+        <a href="#" id="nav-logout-btn" class="link">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="ai-shell">
+    <header class="ai-header">
+      <div class="ai-title">AI Trips</div>
+      <div class="ai-sub">
+        Plan smarter journeys with TripAdvisor AI. Chat to design your package, or use an AI call
+        concierge to get a human-style walkthrough of your itinerary.
+      </div>
+    </header>
+
+    <section class="ai-grid">
+      <!-- AI CHAT -->
+      <article class="ai-card">
+        <div class="ai-card-header">
+          <div>
+            <div class="ai-card-title">AI Trip Chat</div>
+            <div class="ai-card-sub">
+              Tell our AI where you’d like to go, your budget and mood. It will draft a day-wise plan,
+              hotels and experiences you can book instantly.
+            </div>
+          </div>
+          <div class="ai-card-pill">
+            <span class="ai-dot"></span>
+            Live assistant
+          </div>
+        </div>
+
+        <div class="ai-chat-shell">
+          <div id="ai-chat-log" class="ai-chat-log">
+            <div class="ai-msg ai-msg-bot">
+              Hi! I’m your TripAdvisor AI planner. 👋
+              <span class="ai-msg-meta">
+                Tell me: where are you starting from, and what kind of trip are you looking for?
+              </span>
+            </div>
+          </div>
+
+          <div class="ai-chat-input-row">
+            <input
+              id="ai-chat-input"
+              class="ai-input"
+              type="text"
+              placeholder="Ask me anything: &quot;3 days in Goa from Mumbai for 2 people&quot;…"
+            />
+            <button id="ai-chat-send" class="ai-btn-primary" type="button">
+              Send
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- AI CALL -->
+      <article class="ai-card">
+        <div class="ai-card-header">
+          <div>
+            <div class="ai-card-title">AI Call Concierge</div>
+            <div class="ai-card-sub">
+              Prefer talking instead of typing? Share your details and we’ll connect you to an AI-powered
+              call that walks you through the best trip options.
+            </div>
+          </div>
+          <div class="ai-card-pill">
+            Voice · Coming soon
+          </div>
+        </div>
+
+        <div>
+          <ul class="ai-call-list">
+            <li>Get a spoken overview of suggested itineraries.</li>
+            <li>Ask follow-up questions about hotels, activities and weather.</li>
+            <li>Receive a summary link you can book from in one tap.</li>
+          </ul>
+
+          <label class="bk-label" for="ai-call-name">Name</label>
+          <input id="ai-call-name" class="ai-input" type="text" placeholder="Your name"/>
+
+          <label class="bk-label" for="ai-call-phone">Preferred number</label>
+          <input id="ai-call-phone" class="ai-input" type="tel" placeholder="+91 98765 43210"/>
+
+          <label class="bk-label" for="ai-call-notes">What should we help you plan?</label>
+          <textarea
+            id="ai-call-notes"
+            class="bk-input"
+            style="border-radius:14px;margin-top:2px;"
+            placeholder="Example: 5-day honeymoon in Manali under ₹40,000, close to snow view points."
+          ></textarea>
+
+          <div class="ai-call-actions">
+            <button id="ai-call-btn" type="button" class="ai-btn-ghost">
+              Request AI callback
+            </button>
+            <div class="ai-call-meta">
+              We’re testing this feature with a limited number of travellers.
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="ai-toast" class="ai-toast">Saved your request. We’ll notify you when AI calls are live.</div>
+
+  <script>
+    // Logout behaviour – works on the nav link but keeps styling identical
+    (function () {
+      const logoutLink = document.getElementById("nav-logout-btn");
+      if (!logoutLink) return;
+
+      logoutLink.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+          const res = await fetch("/api/auth/logout", { method: "POST" });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || "Logout failed");
+
+          logoutLink.textContent = "Logging out...";
+          logoutLink.style.pointerEvents = "none";
+
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 1000);
+        } catch (err) {
+          console.error(err);
+          alert("Logout failed. Try again.");
+        }
+      });
+    })();
+
+    // AI chat + call logic (Perplexity-backed chat, call still placeholder)
+    (function () {
+      const chatLog  = document.getElementById("ai-chat-log");
+      const chatInput = document.getElementById("ai-chat-input");
+      const chatSend  = document.getElementById("ai-chat-send");
+      const callBtn   = document.getElementById("ai-call-btn");
+      const callName  = document.getElementById("ai-call-name");
+      const callPhone = document.getElementById("ai-call-phone");
+      const callNotes = document.getElementById("ai-call-notes");
+      const toastEl   = document.getElementById("ai-toast");
+
+      // keep light conversation history for better replies
+      const history = [];
+
+      function showToast(msg) {
+        if (!toastEl) return;
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        setTimeout(() => toastEl.classList.remove("show"), 1800);
+      }
+
+      function addMessage(text, who) {
+        if (!chatLog || !text) return;
+        const div = document.createElement("div");
+        div.className = "ai-msg " + (who === "user" ? "ai-msg-user" : "ai-msg-bot");
+        div.textContent = text;
+        chatLog.appendChild(div);
+        chatLog.scrollTop = chatLog.scrollHeight;
+        return div;
+      }
+
+      function addBotMessage(text, meta) {
+        if (!chatLog) return null;
+        const wrap = document.createElement("div");
+        wrap.className = "ai-msg ai-msg-bot";
+        wrap.textContent = text;
+        if (meta) {
+          const span = document.createElement("span");
+          span.className = "ai-msg-meta";
+          span.textContent = meta;
+          wrap.appendChild(span);
+        }
+        chatLog.appendChild(wrap);
+        chatLog.scrollTop = chatLog.scrollHeight;
+        return wrap;
+      }
+
+      async function handleSend() {
+        const text = (chatInput && chatInput.value || "").trim();
+        if (!text) return;
+        addMessage(text, "user");
+        history.push({ role: "user", content: text });
+        chatInput.value = "";
+
+        // show temporary "thinking" message
+        const thinkingEl = addBotMessage("Thinking about the best options for you…", null);
+
+        // disable while waiting
+        if (chatInput) chatInput.disabled = true;
+        if (chatSend) chatSend.disabled = true;
+
+        try {
+          const res = await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text, history })
+          });
+
+          const data = await res.json();
+
+          if (thinkingEl && thinkingEl.parentNode === chatLog) {
+            chatLog.removeChild(thinkingEl);
+          }
+
+          if (!data.ok) {
+            addBotMessage("Sorry, I couldn’t process that request right now. Please try again in a moment.");
+            console.error("AI error:", data);
+            return;
+          }
+
+          const reply = data.reply || "I couldn't generate a reply just now.";
+          addBotMessage(reply);
+          history.push({ role: "assistant", content: reply });
+        } catch (err) {
+          console.error(err);
+          if (thinkingEl && thinkingEl.parentNode === chatLog) {
+            chatLog.removeChild(thinkingEl);
+          }
+          addBotMessage("Network error while contacting TripAdvisor AI. Please check your connection and try again.");
+        } finally {
+          if (chatInput) {
+            chatInput.disabled = false;
+            chatInput.focus();
+          }
+          if (chatSend) chatSend.disabled = false;
+        }
+      }
+
+      if (chatSend && chatInput) {
+        chatSend.addEventListener("click", handleSend);
+        chatInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+          }
+        });
+      }
+
+      if (callBtn) {
+        callBtn.addEventListener("click", () => {
+          const name  = (callName && callName.value.trim()) || "Traveller";
+          const phone = callPhone && callPhone.value.trim();
+          const notes = callNotes && callNotes.value.trim();
+
+          const req = { name, phone, notes, createdAt: new Date().toISOString() };
+          try {
+            localStorage.setItem("twAiCallRequest", JSON.stringify(req));
+          } catch (_) {}
+
+          showToast("Saved your request. We’ll notify you when AI calls are live.");
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

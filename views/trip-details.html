@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Tripadvisor • Trip details</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- reuse your global styles (same as index & booking) -->
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <style>
+    :root {
+      --td-bg: #020617;
+      --td-surface: #020617;
+      --td-card: #020617;
+      --td-border-subtle: #1f2937;
+      --td-muted: #9ca3af;
+      --td-accent: #2563eb;
+      --td-accent-soft: rgba(37,99,235,0.15);
+      --td-text: #e5e7eb;
+    }
+
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%), #020617;
+      color: var(--td-text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Poppins", sans-serif;
+    }
+
+    .td-shell {
+      max-width: 1200px;
+      margin: 86px auto 40px;
+      padding: 0 20px 32px;
+    }
+
+    /* top hero */
+    .td-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .td-hero-main {
+      position: relative;
+      border-radius: 26px;
+      overflow: hidden;
+      min-height: 260px;
+      background: #020617;
+      border: 1px solid rgba(15,23,42,0.9);
+      box-shadow: 0 24px 60px rgba(15,23,42,0.9);
+    }
+
+    .td-hero-img {
+      position: absolute;
+      inset: 0;
+      background-position: center;
+      background-size: cover;
+      filter: brightness(0.9);
+      transform: scale(1.02);
+    }
+
+    .td-hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(15,23,42,0.96), rgba(15,23,42,0.35));
+    }
+
+    .td-hero-content {
+      position: relative;
+      padding: 18px 20px 18px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .td-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+    }
+
+    .td-hero-text {
+      max-width: 60%;
+      min-width: 0;
+    }
+
+    .td-pill-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.5);
+      color: #facc15;
+    }
+
+    .td-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin: 12px 0 4px;
+    }
+
+    .td-sub {
+      font-size: 14px;
+      color: var(--td-muted);
+    }
+
+    .td-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .td-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      font-size: 12px;
+      color: var(--td-muted);
+      background: rgba(15,23,42,0.9);
+    }
+
+    .td-hero-cta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      text-align: right;
+    }
+
+    .td-hero-price {
+      font-size: 13px;
+      color: #cbd5f5;
+    }
+
+    .td-hero-price span {
+      font-size: 22px;
+      font-weight: 600;
+      color: #f9fafb;
+      display: block;
+    }
+
+    .td-btn-primary {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--td-accent), #1d4ed8);
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow: 0 16px 36px rgba(37,99,235,.55);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+      white-space: nowrap;
+    }
+    .td-btn-primary:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 20px 42px rgba(37,99,235,.6);
+    }
+    .td-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 24px rgba(37,99,235,.45);
+    }
+
+    /* right side summary + gallery */
+    .td-hero-side {
+      border-radius: 24px;
+      border: 1px solid rgba(15,23,42,0.9);
+      background: radial-gradient(circle at top left, #111827, #020617);
+      padding: 14px 14px 12px;
+      box-shadow: 0 18px 45px rgba(15,23,42,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .td-side-heading {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .td-side-sub {
+      font-size: 12px;
+      color: var(--td-muted);
+    }
+
+    /* gallery: show all images in a horizontal scroll strip */
+    .td-gallery {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      margin-top: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148,163,184,0.8) transparent;
+    }
+    .td-gallery::-webkit-scrollbar {
+      height: 4px;
+    }
+    .td-gallery::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .td-gallery::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,0.8);
+      border-radius: 999px;
+    }
+
+    .td-gallery-img {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(15,23,42,0.9);
+      height: 70px;
+      width: 110px;
+      min-width: 110px;
+      background-position: center;
+      background-size: cover;
+      flex: 0 0 auto;
+    }
+
+    .td-tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .td-tag {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.4);
+      color: var(--td-muted);
+    }
+
+    /* content sections */
+    .td-sections {
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .td-card {
+      background: radial-gradient(circle at top left, #111827, #020617 60%);
+      border-radius: 22px;
+      border: 1px solid var(--td-border-subtle);
+      padding: 16px 18px 14px;
+      box-shadow: 0 18px 45px rgba(15,23,42,0.7);
+    }
+
+    .td-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .td-card-header h2 {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .td-card-header span {
+      font-size: 12px;
+      color: var(--td-muted);
+    }
+
+    .td-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .td-list li {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(15,23,42,0.9);
+      font-size: 13px;
+    }
+    .td-list li:last-child {
+      border-bottom: none;
+    }
+
+    .td-item-title {
+      font-weight: 500;
+      font-size: 13px;
+    }
+    .td-item-sub {
+      font-size: 12px;
+      color: var(--td-muted);
+    }
+
+    /* itinerary */
+    .td-itinerary {
+      margin-top: 24px;
+    }
+
+    .td-itinerary-days {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+
+    .td-itinerary-day {
+      background: rgba(15,23,42,0.96);
+      border-radius: 16px;
+      padding: 10px 12px;
+      border: 1px solid rgba(30,64,175,0.55);
+      font-size: 13px;
+    }
+
+    .td-itinerary-day h3 {
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #bfdbfe;
+    }
+
+    .td-itinerary-day p {
+      font-size: 12px;
+      color: var(--td-muted);
+    }
+
+    .td-empty {
+      font-size: 13px;
+      color: var(--td-muted);
+      padding: 6px 0;
+    }
+
+    /* small screens */
+    @media (max-width: 900px) {
+      .td-shell {
+        margin-top: 76px;
+        padding-inline: 14px;
+      }
+      .td-hero {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .td-hero-main {
+        min-height: 220px;
+      }
+      .td-hero-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .td-hero-text {
+        max-width: 100%;
+      }
+      .td-hero-cta {
+        align-items: flex-start;
+        text-align: left;
+      }
+      .td-sections {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .td-itinerary-days {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- reuse your existing top nav from customer app -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">TA</div>
+        <div class="name">Tripadvisor</div>
+      </div>
+      <div class="links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/profile" class="link">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="td-shell">
+    <!-- HERO -->
+    <section class="td-hero" id="td-hero-section" style="display:none;">
+      <div class="td-hero-main">
+        <div class="td-hero-img" id="td-hero-img"></div>
+        <div class="td-hero-gradient"></div>
+        <div class="td-hero-content">
+          <div class="td-hero-top">
+            <div class="td-hero-text">
+              <span class="td-pill-rating" id="td-rating-pill">4.5 ★</span>
+              <h1 class="td-title" id="td-title">Trip title</h1>
+              <p class="td-sub" id="td-sub">Source → Destination • X days</p>
+
+              <div class="td-meta-row">
+                <span class="td-pill" id="td-meta-duration">4 days</span>
+                <span class="td-pill" id="td-meta-best-season">Best season: —</span>
+                <span class="td-pill" id="td-meta-type">Getaway</span>
+              </div>
+            </div>
+
+            <div class="td-hero-cta">
+              <div class="td-hero-price">
+                From <span id="td-price">₹0</span>
+                <small style="font-size:11px;color:var(--td-muted);">per person / day</small>
+              </div>
+              <button class="td-btn-primary" id="td-book-btn">Book this trip</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="td-hero-side">
+        <div>
+          <div class="td-side-heading">Trip overview</div>
+          <div class="td-side-sub" id="td-overview-text">
+            Perfect for a quick escape – summary will appear here.
+          </div>
+        </div>
+
+        <div id="td-gallery-block" style="display:none;">
+          <div class="td-side-heading" style="margin-top:4px;">Gallery</div>
+          <div class="td-gallery" id="td-gallery"></div>
+        </div>
+
+        <div>
+          <div class="td-side-heading">Good to know</div>
+          <div class="td-tag-row" id="td-tags">
+            <!-- tags injected -->
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- MAIN SECTIONS -->
+    <section class="td-sections" id="td-sections" style="display:none;">
+      <article class="td-card">
+        <div class="td-card-header">
+          <h2>Stays & restaurants</h2>
+          <span>Curated for this package</span>
+        </div>
+
+        <h3 style="font-size:13px;margin-bottom:4px;">Hotels / stays</h3>
+        <ul class="td-list" id="td-hotels-list"></ul>
+
+        <h3 style="font-size:13px;margin:10px 0 4px;">Restaurants</h3>
+        <ul class="td-list" id="td-restaurants-list"></ul>
+      </article>
+
+      <article class="td-card">
+        <div class="td-card-header">
+          <h2>Sightseeing & highlights</h2>
+          <span>What you'll experience</span>
+        </div>
+
+        <ul class="td-list" id="td-sights-list"></ul>
+      </article>
+    </section>
+
+    <!-- ITINERARY -->
+    <section class="td-card td-itinerary" id="td-itinerary-card" style="display:none;margin-top:22px;">
+      <div class="td-card-header">
+        <h2>Day-wise itinerary</h2>
+        <span>Plan may change slightly depending on conditions</span>
+      </div>
+      <div id="td-itinerary-empty" class="td-empty">
+        Itinerary details will appear here once the agent adds them.
+      </div>
+      <div class="td-itinerary-days" id="td-itinerary-days"></div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      // ---- helpers ----
+      function rupee(v) {
+        const n = Number(v) || 0;
+        return new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(n);
+      }
+
+      function getTripIdFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("tripId");
+      }
+
+      function buildTags(trip) {
+        const tags = [];
+        if (trip.durationDays) tags.push(trip.durationDays + " days");
+        if (trip.pricePerPersonPerDay) tags.push("From " + rupee(trip.pricePerPersonPerDay));
+        if (trip.src && trip.dst) tags.push((trip.src || "Any city") + " → " + trip.dst);
+        if (trip.rating) tags.push(trip.rating.toFixed ? trip.rating.toFixed(1) + " ★ rated" : trip.rating + " ★");
+        return tags;
+      }
+
+      function splitItinerary(raw) {
+        if (!raw || typeof raw !== "string") return [];
+        // split by blank lines first, fallback to single lines
+        const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+        if (blocks.length) return blocks;
+        return raw.split("\n").map(b => b.trim()).filter(Boolean);
+      }
+
+      function deriveDayTitle(block, index) {
+        // If text starts with "Day x", use it; else generate Day 1 / Day 2 etc
+        const m = block.match(/^day\s*\d+/i);
+        if (m) {
+          const firstLine = block.split(/[.:]/)[0];
+          return firstLine.trim();
+        }
+        return "Day " + (index + 1);
+      }
+
+      async function fetchTrip(tripId) {
+        const res = await fetch("/api/trips/" + encodeURIComponent(tripId));
+        const data = await res.json();
+        if (!res.ok || !data || data.ok === false) {
+          throw new Error(data.error || "Failed to load trip");
+        }
+        // Support both {trip} and plain object shapes
+        return data.trip || data;
+      }
+
+      // ---- render ----
+      async function init() {
+        const tripId = getTripIdFromQuery();
+        if (!tripId) {
+          window.location.href = "/";
+          return;
+        }
+
+        let trip;
+        try {
+          trip = await fetchTrip(tripId);
+        } catch (err) {
+          console.error(err);
+          alert("Could not load trip details. Please try again.");
+          window.location.href = "/";
+          return;
+        }
+
+        // HERO
+        const heroSection = document.getElementById("td-hero-section");
+        const heroImg = document.getElementById("td-hero-img");
+        const ratingPill = document.getElementById("td-rating-pill");
+        const titleEl = document.getElementById("td-title");
+        const subEl = document.getElementById("td-sub");
+        const durMeta = document.getElementById("td-meta-duration");
+        const typeMeta = document.getElementById("td-meta-type");
+        const priceEl = document.getElementById("td-price");
+        const overviewEl = document.getElementById("td-overview-text");
+        const tagsWrap = document.getElementById("td-tags");
+        const bookBtn = document.getElementById("td-book-btn");
+
+        const heroUrl = trip.img || (Array.isArray(trip.imgs) && trip.imgs[0]) || "";
+        if (heroUrl) {
+          heroImg.style.backgroundImage = "url('" + heroUrl + "')";
+        } else {
+          heroImg.style.background = "radial-gradient(circle at top, rgba(37,99,235,.2), #020617)";
+        }
+
+        ratingPill.textContent = (trip.rating ? (trip.rating.toFixed ? trip.rating.toFixed(1) : trip.rating) : "4.5") + " ★";
+
+        titleEl.textContent = trip.title || "Trip package";
+        const src = trip.src || "Any city";
+        const dst = trip.dst || "Destination";
+        const durationLabel = (trip.durationDays || 1) + (trip.durationDays === 1 ? " day" : " days");
+        subEl.textContent = src + " → " + dst + " • " + durationLabel;
+
+        durMeta.textContent = durationLabel;
+        typeMeta.textContent = trip.tripType || "Curated getaway";
+
+        if (trip.pricePerPersonPerDay) {
+          priceEl.textContent = rupee(trip.pricePerPersonPerDay);
+        } else {
+          priceEl.textContent = rupee(0);
+        }
+
+        overviewEl.textContent =
+          trip.shortDescription ||
+          "A curated escape with comfortable stays, local experiences and a balanced pace. Exact flow may change slightly depending on weather and availability.";
+
+        // Tags
+        const tagList = buildTags(trip);
+        tagsWrap.innerHTML = "";
+        if (tagList.length) {
+          tagList.forEach((t) => {
+            const span = document.createElement("span");
+            span.className = "td-tag";
+            span.textContent = t;
+            tagsWrap.appendChild(span);
+          });
+        } else {
+          const span = document.createElement("span");
+          span.className = "td-tag";
+          span.textContent = "Flexible dates";
+          tagsWrap.appendChild(span);
+        }
+
+        heroSection.style.display = "";
+
+        // book button → go to booking with same tripId
+        bookBtn.addEventListener("click", () => {
+          window.location.href = "/booking?tripId=" + encodeURIComponent(tripId);
+        });
+
+        // STAYS & FOOD
+        const hotelsList = document.getElementById("td-hotels-list");
+        const restaurantsList = document.getElementById("td-restaurants-list");
+        const sightsList = document.getElementById("td-sights-list");
+
+        function renderList(listEl, items, emptyText) {
+          listEl.innerHTML = "";
+          if (!items || !items.length) {
+            const li = document.createElement("li");
+            li.className = "td-empty";
+            li.textContent = emptyText;
+            listEl.appendChild(li);
+            return;
+          }
+
+          items.forEach((item) => {
+            const li = document.createElement("li");
+            const title = document.createElement("div");
+            title.className = "td-item-title";
+            title.textContent = item.name || "Unnamed";
+
+            const sub = document.createElement("div");
+            sub.className = "td-item-sub";
+            let text = item.description || "";
+            if (item.nights) {
+              text = (text ? text + " • " : "") + item.nights + " night" + (item.nights > 1 ? "s" : "");
+            }
+            sub.textContent = text;
+
+            li.appendChild(title);
+            if (text) li.appendChild(sub);
+            listEl.appendChild(li);
+          });
+        }
+
+        renderList(
+          hotelsList,
+          trip.hotels || [],
+          "Hotels / stays will be confirmed at the time of booking."
+        );
+        renderList(
+          restaurantsList,
+          trip.restaurants || [],
+          "Restaurant suggestions will be shared closer to travel dates."
+        );
+        renderList(
+          sightsList,
+          trip.sightseeing || [],
+          "Sightseeing spots will be planned according to weather and timings."
+        );
+
+        document.getElementById("td-sections").style.display = "";
+
+        // GALLERY
+        const galleryBlock = document.getElementById("td-gallery-block");
+        const gallery = document.getElementById("td-gallery");
+        const galleryImgs = Array.isArray(trip.imgs) ? trip.imgs : [];
+        gallery.innerHTML = "";
+        if (galleryImgs.length) {
+          galleryImgs.forEach((url) => {
+            const div = document.createElement("div");
+            div.className = "td-gallery-img";
+            div.style.backgroundImage = "url('" + url + "')";
+            gallery.appendChild(div);
+          });
+          galleryBlock.style.display = "";
+        }
+
+        // ITINERARY
+        const itiCard = document.getElementById("td-itinerary-card");
+        const itiEmpty = document.getElementById("td-itinerary-empty");
+        const itiDaysWrap = document.getElementById("td-itinerary-days");
+
+        itiDaysWrap.innerHTML = "";
+        const blocks = splitItinerary(trip.itineraryText || "");
+        if (!blocks.length) {
+          itiCard.style.display = "";
+          return;
+        }
+
+        itiEmpty.style.display = "none";
+        blocks.forEach((block, idx) => {
+          const div = document.createElement("div");
+          div.className = "td-itinerary-day";
+
+          const h = document.createElement("h3");
+          h.textContent = deriveDayTitle(block, idx);
+
+          const p = document.createElement("p");
+          p.textContent = block.replace(/^day\s*\d+\s*[-:.]?\s*/i, "");
+
+          div.appendChild(h);
+          div.appendChild(p);
+          itiDaysWrap.appendChild(div);
+        });
+
+        itiCard.style.display = "";
+      }
+
+      // init
+      init();
+    })();
+  </script>
+</body>
+</html>

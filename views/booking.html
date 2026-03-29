@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TripAdvisor • Booking</title>
+
+  <!-- reuse global layout styles (nav, fonts, base colors) -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <!-- booking-page specific styles (scoped here) -->
+  <style>
+    :root {
+      --bk-surface: #020617;
+      --bk-card: #020617f2;
+      --bk-border: #1f2937;
+      --bk-muted: #9ca3af;
+      --bk-primary: #2563eb;
+      --bk-primary-dark: #1d4ed8;
+    }
+
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+    }
+
+    .booking-wrap {
+      max-width: 1040px;
+      margin: 96px auto 40px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+      gap: 18px;
+    }
+
+    .booking-card {
+      background: linear-gradient(145deg, #020617f2, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 22px 22px 20px;
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    .booking-card h1 {
+      font-size: 22px;
+      margin: 0 0 6px;
+    }
+    .booking-sub {
+      font-size: 13px;
+      color: var(--bk-muted);
+      margin-bottom: 18px;
+    }
+
+    .booking-row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+
+    .bk-label {
+      display: block;
+      font-size: 12px;
+      color: var(--bk-muted);
+      margin-bottom: 4px;
+    }
+    .bk-input,
+    .bk-select {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1px solid var(--bk-border);
+      background: #020617;
+      color: #f9fafb;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .bk-input::placeholder {
+      color: #6b7280;
+    }
+    .bk-input:focus,
+    .bk-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(37,99,235,.55), 0 0 0 6px rgba(37,99,235,.18);
+    }
+    textarea.bk-input {
+      resize: vertical;
+      min-height: 76px;
+    }
+
+    .bk-btn-primary {
+      width: 100%;
+      border-radius: 999px;
+      padding: 11px 14px;
+      margin-top: 4px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg,var(--bk-primary),var(--bk-primary-dark));
+      color: #f9fafb;
+      box-shadow: 0 16px 32px rgba(37,99,235,.55);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+    }
+    .bk-btn-primary:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 20px 40px rgba(37,99,235,.6);
+    }
+    .bk-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 11px 22px rgba(37,99,235,.45);
+    }
+
+    .bk-note {
+      font-size: 11px;
+      color: var(--bk-muted);
+      margin-top: 8px;
+    }
+
+    /* summary card */
+    .booking-summary {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 60%),
+                  #020617f2;
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      padding: 18px 18px 16px;
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    .booking-summary h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+    .booking-summary .trip-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .booking-summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .booking-summary-row span.muted {
+      color: var(--bk-muted);
+    }
+    .booking-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(148,163,184,.4);
+      background: rgba(15,23,42,.9);
+      margin-bottom: 8px;
+    }
+    .booking-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+    .booking-summary-total {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(148,163,184,.35);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .bk-alert {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #a5b4fc;
+      display: none;
+    }
+    .bk-alert.show {
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .booking-wrap {
+        grid-template-columns: minmax(0,1fr);
+        margin-top: 88px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- same nav as dashboard (style comes from /css/style.css & our overrides) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripAdvisor</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="#" class="link">AI Trips</a>
+    
+        <a href="#" class="link">About</a>
+        <a href="/profile" class="link">Profile</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="booking-wrap">
+    <!-- booking form -->
+    <section class="booking-card">
+      <h1>Booking details</h1>
+      <p class="booking-sub">
+        Confirm your contact details and trip preferences. We’ll use this to reserve your package
+        and share payment & itinerary information.
+      </p>
+
+      <form id="bookingForm">
+        <div class="booking-row">
+          <div>
+            <label class="bk-label" for="bk-email">Email</label>
+            <input id="bk-email" class="bk-input" type="email" placeholder="you@example.com" required />
+          </div>
+          <div>
+            <label class="bk-label" for="bk-phone">Mobile</label>
+            <input id="bk-phone" class="bk-input" type="tel" placeholder="+91 98765 43210" required />
+          </div>
+        </div>
+
+        <div class="booking-row">
+          <div>
+            <label class="bk-label" for="bk-persons">Number of persons</label>
+            <input id="bk-persons" class="bk-input" type="number" min="1" value="2" required />
+          </div>
+          <div>
+            <label class="bk-label" for="bk-days">Number of days</label>
+            <input id="bk-days" class="bk-input" type="number" min="1" value="3" required />
+          </div>
+        </div>
+
+        <div class="booking-row">
+          <div>
+            <label class="bk-label" for="bk-start">Start date</label>
+            <input id="bk-start" class="bk-input" type="date" required />
+          </div>
+          <div>
+            <label class="bk-label" for="bk-room">Room preference</label>
+            <select id="bk-room" class="bk-select">
+              <option value="standard">Standard room</option>
+              <option value="deluxe">Deluxe room</option>
+              <option value="suite">Suite</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="bk-label" for="bk-notes">Special requests (optional)</label>
+        <textarea id="bk-notes" class="bk-input" placeholder="Any special meals, activities, or preferences?"></textarea>
+
+        <button type="submit" class="bk-btn-primary">Proceed to payment</button>
+        <p class="bk-note">
+          You won’t be charged yet. On the next step, you’ll review the total price and confirm payment.
+        </p>
+        <p id="bk-alert" class="bk-alert"></p>
+      </form>
+    </section>
+
+    <!-- booking summary -->
+    <aside class="booking-summary">
+      <h2>Your trip</h2>
+      <div class="booking-tag">
+        <span class="booking-tag-dot"></span>
+        <span id="bk-trip-tag">Selected package</span>
+      </div>
+
+      <div class="trip-title" id="bk-trip-title">Trip title</div>
+      <div class="booking-summary-row">
+        <span class="muted">Trip ID</span>
+        <span id="bk-trip-id">—</span>
+      </div>
+      <div class="booking-summary-row">
+        <span class="muted">Approx. price / person / day</span>
+        <span id="bk-trip-price">—</span>
+      </div>
+
+      <div class="booking-summary-row">
+        <span class="muted">Travellers</span>
+        <span id="bk-trip-persons">2</span>
+      </div>
+      <div class="booking-summary-row">
+        <span class="muted">Duration</span>
+        <span id="bk-trip-days">3 nights</span>
+      </div>
+
+      <div class="booking-summary-total">
+        <span>Estimated package total</span>
+        <span id="bk-trip-total">—</span>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (function () {
+      const qs = new URLSearchParams(window.location.search);
+
+      // Read whatever we already have in the URL
+      const tripIdFromUrl = qs.get("tripId");
+      const titleFromUrl  = qs.get("title");
+      const priceFromUrl  = qs.get("price");
+      const srcFromUrl    = qs.get("src");
+      const dstFromUrl    = qs.get("dst");
+      const daysFromUrl   = qs.get("days");
+
+      // DOM shortcuts
+      const $ = (id) => document.getElementById(id);
+
+      const tripIdEl      = $("bk-trip-id");
+      const tripTitleEl   = $("bk-trip-title");
+      const tripPriceEl   = $("bk-trip-price");
+      const tripPersonsEl = $("bk-trip-persons");
+      const tripDaysEl    = $("bk-trip-days");
+      const tripTotalEl   = $("bk-trip-total");
+      const tripTagEl     = $("bk-trip-tag");
+
+      const personsInput  = $("bk-persons");
+      const daysInput     = $("bk-days");
+      const startInput    = $("bk-start");
+      const emailInput    = $("bk-email");
+      const phoneInput    = $("bk-phone");
+      const roomSelect    = $("bk-room");
+      const notesInput    = $("bk-notes");
+      const alertEl       = $("bk-alert");
+
+      const rupee = (n) =>
+        new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(Number(n) || 0);
+
+      const todayISO = () => new Date().toISOString().slice(0, 10);
+      if (startInput) startInput.value = todayISO();
+
+      // Trip object we will hydrate from URL + API
+      let trip = {
+        _id: tripIdFromUrl || null,
+        title: titleFromUrl || "Selected Trip",
+        pricePerPersonPerDay: priceFromUrl ? Number(priceFromUrl) : null,
+        src: srcFromUrl || "",
+        dst: dstFromUrl || "",
+        durationDays: daysFromUrl ? Number(daysFromUrl) : null,
+      };
+
+      async function hydrateTripFromApiIfNeeded() {
+        if (!trip._id) return; // nothing we can fetch
+
+        // If we already have title & price, we can skip fetch – but let's fetch
+        // anyway to keep everything in sync & get itinerary if needed later.
+        try {
+          const res = await fetch(`/api/trips/${encodeURIComponent(trip._id)}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data.ok || !data.trip) return;
+
+          const t = data.trip;
+          trip = {
+            _id: t._id,
+            title: t.title || trip.title,
+            pricePerPersonPerDay:
+              typeof t.pricePerPersonPerDay === "number"
+                ? t.pricePerPersonPerDay
+                : trip.pricePerPersonPerDay,
+            src: t.src || trip.src,
+            dst: t.dst || trip.dst,
+            durationDays:
+              typeof t.durationDays === "number"
+                ? t.durationDays
+                : trip.durationDays,
+          };
+        } catch (err) {
+          console.error("Failed to fetch trip for booking:", err);
+        }
+      }
+
+      function renderTripSummary() {
+        // Route in title if available
+        const routePart =
+          trip.src && trip.dst ? ` (${trip.src} → ${trip.dst})` : "";
+        if (tripTitleEl) tripTitleEl.textContent = (trip.title || "Selected Trip") + routePart;
+
+        if (tripIdEl) tripIdEl.textContent = trip._id || "—";
+
+        if (tripPriceEl) {
+          tripPriceEl.textContent =
+            typeof trip.pricePerPersonPerDay === "number"
+              ? rupee(trip.pricePerPersonPerDay)
+              : "—";
+        }
+
+        // Default days input from trip duration, if present
+        if (trip.durationDays && daysInput && !daysFromUrl) {
+          daysInput.value = trip.durationDays;
+        }
+
+        // Duration label
+        if (tripDaysEl) {
+          const d =
+            daysInput && daysInput.value
+              ? Number(daysInput.value)
+              : trip.durationDays;
+          tripDaysEl.textContent = d
+            ? `${d} night${d > 1 ? "s" : ""}`
+            : "—";
+        }
+
+        if (tripTagEl && trip.title) {
+          tripTagEl.textContent = "Selected package";
+        }
+
+        updateTotals();
+      }
+
+      function updateTotals() {
+        const persons = personsInput ? Number(personsInput.value || 0) : 0;
+        const days = daysInput ? Number(daysInput.value || 0) : 0;
+
+        if (tripPersonsEl) {
+          tripPersonsEl.textContent = persons || "-";
+        }
+        if (tripDaysEl) {
+          tripDaysEl.textContent = days
+            ? `${days} night${days > 1 ? "s" : ""}`
+            : "-";
+        }
+
+        if (tripTotalEl) {
+          if (trip.pricePerPersonPerDay && persons && days) {
+            const total = trip.pricePerPersonPerDay * persons * days;
+            tripTotalEl.textContent = rupee(total);
+          } else {
+            tripTotalEl.textContent = "—";
+          }
+        }
+      }
+
+      // Recalculate whenever persons/days change
+      if (personsInput) {
+        personsInput.addEventListener("input", updateTotals);
+        personsInput.addEventListener("change", updateTotals);
+      }
+      if (daysInput) {
+        daysInput.addEventListener("input", updateTotals);
+        daysInput.addEventListener("change", updateTotals);
+      }
+
+      // Form submit -> save draft + redirect to /payment
+      const form = document.getElementById("bookingForm");
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          const booking = {
+            tripId: trip._id,
+            title: trip.title,
+            src: trip.src,
+            dst: trip.dst,
+            durationDays: Number(daysInput.value || trip.durationDays || 0),
+            pricePerPersonPerDay: trip.pricePerPersonPerDay,
+            email: emailInput.value.trim(),
+            phone: phoneInput.value.trim(),
+            persons: Number(personsInput.value || 0),
+            days: Number(daysInput.value || 0),
+            startDate: startInput.value,
+            room: roomSelect.value,
+            notes: notesInput.value.trim(),
+            createdAt: new Date().toISOString(),
+          };
+
+          localStorage.setItem("twBookingDraft", JSON.stringify(booking));
+
+          if (alertEl) {
+            alertEl.textContent =
+              "Booking details saved. Redirecting you to payment…";
+            alertEl.classList.add("show");
+          }
+
+          setTimeout(() => {
+            window.location.href = "/payment";
+          }, 800);
+        });
+      }
+
+      // Init: fetch trip if needed, then render
+      (async function init() {
+        await hydrateTripFromApiIfNeeded();
+        renderTripSummary();
+      })();
+    })();
+  </script>
+</body>
+</html>

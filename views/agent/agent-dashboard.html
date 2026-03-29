@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TripAdvisor • Agent Dashboard</title>
+
+  <!-- Global TripAdvisor styles (fonts, base colors, etc.) -->
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --agt-surface: #020617;
+      --agt-card: #020617f2;
+      --agt-border: #1f2937;
+      --agt-muted: #9ca3af;
+      --agt-primary: #2563eb;
+      --agt-primary-dark: #1d4ed8;
+      /* extra tokens used by bookings-style nav */
+      --border-subtle: #1e293b;
+      --accent: #2563eb;
+      --accent-soft: #1d4ed8;
+      --text-main: #e5e7eb;
+      --text-soft: #94a3b8;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color: #e5e7eb;
+    }
+
+    /* ---------- NAVIGATION (same design as agent-bookings) ---------- */
+    .tw-agent-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 20px 0;
+    }
+
+    .tw-agent-nav {
+      height: 60px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      margin-bottom: 28px;
+      backdrop-filter: blur(20px);
+    }
+
+    .tw-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tw-logo-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9fafb;
+      color: #020617;
+      font-weight: 700;
+    }
+    .tw-logo-text {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .tw-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tw-nav-link {
+      border-radius: 999px;
+      padding: 8px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+    }
+    .tw-nav-link:hover {
+      color: var(--text-main);
+      background: rgba(30, 64, 175, 0.25);
+    }
+    .tw-nav-link.tw-active {
+      background: var(--accent);
+      color: #f9fafb;
+      font-weight: 500;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.5),
+        0 12px 30px rgba(37, 99, 235, 0.4);
+    }
+
+    /* logout keeps same styling as other links */
+
+
+    @media (max-width: 768px) {
+      .tw-agent-shell {
+        padding: 10px 12px 0;
+      }
+      .tw-agent-nav {
+        border-radius: 14px;
+        padding: 0 10px;
+      }
+      .tw-logo-text {
+        display: none;
+      }
+    }
+
+    /* ---------- MAIN DASHBOARD LAYOUT (unchanged) ---------- */
+    .agt-wrap {
+      max-width: 1040px;
+      margin: 80px auto 40px;
+      padding: 0 20px;
+    }
+
+    .agt-header {
+      text-align: left;
+      margin-bottom: 22px;
+    }
+    .agt-header h1 {
+      font-size: 26px;
+      margin: 0;
+      color: #f9fafb;
+    }
+    .agt-header p {
+      font-size: 13px;
+      color: var(--agt-muted);
+      margin-top: 8px;
+    }
+
+    .agt-grid {
+      display: grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+    @media (min-width: 900px) {
+      .agt-grid {
+        grid-template-columns: repeat(4,minmax(0,1fr));
+      }
+      .agt-grid .wide {
+        grid-column: span 2;
+      }
+    }
+    @media (max-width: 640px) {
+      .agt-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
+    .agt-card {
+      background: linear-gradient(145deg, #020617f2, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 18px 20px;
+      color: #e5e7eb;
+    }
+    .agt-card h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+    .agt-card .stat {
+      font-size: 26px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .chart-shell {
+      margin-top: 8px;
+      background: linear-gradient(145deg, #020617f2, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 22px 20px 18px;
+    }
+    .chart-shell h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    .agt-loading {
+      font-size: 13px;
+      color: var(--agt-muted);
+    }
+
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .brand .logo {
+      width: 32px;
+      height: 32px;
+      background: #2563eb;
+      border-radius: 50%;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .link {
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 15px;
+      transition: color 0.2s ease;
+    }
+
+    .link:hover {
+      color: #60a5fa;
+    }
+
+    .link.active {
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+    }
+
+    .logout-btn:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 0 10px rgba(37,99,235,0.6);
+    }
+
+    .shell {
+      max-width: 800px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .sub {
+      font-size: 14px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+
+    .checklist-card {
+      background: linear-gradient(135deg, #020617f8, #020617e6);
+      border: 1px solid rgba(30,41,59,0.9);
+      border-radius: 20px;
+      padding: 24px 28px;
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+    }
+
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: color 0.2s ease;
+    }
+
+    .check-item:hover {
+      color: #93c5fd;
+    }
+
+    .check-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      margin-top: 20px;
+      overflow: hidden;
+    }
+
+    .progress-inner {
+      height: 8px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      width: 0%;
+      transition: width 0.3s ease;
+    }    
+  </style>
+</head>
+<body>
+  <!-- Top nav – same design as agent-bookings page -->
+  <div class="tw-agent-shell">
+    <header class="tw-agent-nav">
+      <div class="tw-nav-left">
+        <div class="tw-logo-circle">T</div>
+        <div class="tw-logo-text">TripAdvisor</div>
+      </div>
+      <nav class="tw-nav-right">
+        <button class="tw-nav-link tw-active" onclick="window.location.href='/agent/dashboard'">
+          Dashboard
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/trips'">
+          My Trips
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/trips/new'">
+          Add Trip
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/bookings'">
+          Bookings
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/profile'">
+          Profile
+        </button>
+        <button class="tw-nav-link btn-logout" id="logoutBtn">
+          Logout
+        </button>
+      </nav>
+    </header>
+  </div>
+
+<main class="shell">
+    <div class="title">Agent Onboarding Checklist</div>
+    <div class="sub">Complete these steps to unlock full visibility and start earning with TripAdvisor.</div>
+
+    <div class="checklist-card">
+      <div class="checklist">
+        <label class="check-item"><input type="checkbox" id="step1"> Complete your profile</label>
+        <label class="check-item"><input type="checkbox" id="step2"> Add your first 3 trips</label>
+        <label class="check-item"><input type="checkbox" id="step3"> Upload at least 5 high-quality photos</label>
+        <label class="check-item"><input type="checkbox" id="step4"> Set your cancellation policy</label>
+        <label class="check-item"><input type="checkbox" id="step5"> Test a booking flow yourself</label>
+      </div>
+
+      <div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
+    </div>
+  </main>
+
+  <script>
+    const steps = ["step1", "step2", "step3", "step4", "step5"];
+    const progress = document.getElementById("progress");
+
+    function updateProgress() {
+      const completed = steps.filter(id => localStorage.getItem(id) === "true").length;
+      const percent = (completed / steps.length) * 100;
+      progress.style.width = percent + "%";
+    }
+
+    steps.forEach(id => {
+      const cb = document.getElementById(id);
+      if (localStorage.getItem(id) === "true") cb.checked = true;
+
+      cb.addEventListener("change", () => {
+        localStorage.setItem(id, cb.checked);
+        updateProgress();
+      });
+    });
+
+    updateProgress();
+
+    // Logout simulation (you can replace with API logout)
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      alert("Logged out successfully!");
+      window.location.href = "/agent/login";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TripWise • Admin Dashboard</title>
+
+  <!-- Global app styles (same as admin-login) -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      /* same palette used in admin-login */
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.22), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 46%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    /* top nav (consistent with admin-login) */
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    /* page shell */
+    .adm-shell{
+      max-width: 1150px;
+      margin: 96px auto 40px;
+      padding: 0 20px 28px;
+    }
+
+    /* header row */
+    .adm-head{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;
+    }
+    .adm-title{font-size:26px;font-weight:700;letter-spacing:.2px;margin:0}
+    .adm-sub{font-size:14px;color:var(--muted);margin-top:4px}
+
+    /* admin subnav (pills) */
+    .adm-tabs{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:12px
+    }
+    .adm-tab{
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      font-size:13px;font-weight:500;
+      padding:8px 12px;border-radius:999px;
+      text-decoration:none;
+      transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .adm-tab:hover{border-color:rgba(148,163,184,.9);background:#0b1220;transform:translateY(-1px)}
+    .adm-tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:transparent;}
+
+    /* cards */
+    .card{
+      background: linear-gradient(145deg,#030712,#0b1220);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 18px;
+    }
+    .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+    .card-title{font-size:16px;font-weight:600}
+    .card-sub{font-size:12px;color:var(--muted)}
+
+    /* KPI row */
+    .kpis{
+      display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin:16px 0 22px
+    }
+    @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media (max-width:700px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+    .kpi{
+      background: radial-gradient(circle at top left, rgba(37,99,235,.06), transparent 50%), #0b1220;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow: 0 10px 26px rgba(2,6,23,.6);
+    }
+    .kpi-title{font-size:12px;color:var(--muted)}
+    .kpi-value{font-size:22px;font-weight:700;margin-top:4px}
+    .kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+    /* grid layout */
+    .grid{display:grid;grid-template-columns:2fr 1.35fr;gap:16px}
+    @media (max-width:1100px){.grid{grid-template-columns:1fr}}
+
+    /* table (dark) */
+    .table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;background:#0b1220}
+    thead tr{background:#0f172a}
+    th,td{font-size:13px;padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    th{color:#cbd5e1}
+    tbody tr:hover{background:#0e1526}
+
+    /* statuses */
+    .status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;text-transform:capitalize}
+    .s-paid{background:rgba(34,197,94,.18);color:#4ade80;border:1px solid rgba(34,197,94,.35)}
+    .s-pending{background:rgba(245,158,11,.16);color:#fbbf24;border:1px solid rgba(245,158,11,.35)}
+    .s-failed{background:rgba(239,68,68,.14);color:#f87171;border:1px solid rgba(239,68,68,.32)}
+    .s-confirmed{background:rgba(59,130,246,.16);color:#93c5fd;border:1px solid rgba(59,130,246,.35)}
+    .s-cancelled{background:rgba(239,68,68,.14);color:#f87171;border:1px solid rgba(239,68,68,.32)}
+
+    /* small badge */
+    .badge{
+      font-size:11px;border:1px solid rgba(148,163,184,.45);
+      padding:4px 8px;border-radius:999px;color:#cbd5e1;background:#0b1220
+    }
+
+    /* list items (right column) */
+    .list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+    .item{
+      border:1px solid var(--border);border-radius:14px;padding:12px;background:#0b1220;
+      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+      box-shadow: 0 10px 24px rgba(2,6,23,.6);
+    }
+    .item h4{margin:0 0 4px;font-size:14px}
+    .item p{margin:0;font-size:12px;color:var(--muted)}
+
+    /* buttons */
+    .btn{border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.45)}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#e5e7eb;border:1px solid rgba(148,163,184,.5)}
+    .btn-ghost:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+
+    /* logout pill (top-right) */
+    .logout{border:1px solid rgba(148,163,184,.5);background:transparent;color:#e5e7eb;padding:8px 14px;border-radius:999px;cursor:pointer}
+    .logout:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+
+    /* toast */
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);
+      padding:10px 16px;border-radius:999px;background:rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);color:#e5e7eb;font-size:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.16s;z-index:40
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  </style>
+</head>
+<body>
+  <!-- Top Navigation (same component used on admin-login) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="adm-shell">
+    <!-- Page header -->
+    <section class="adm-head">
+      <div>
+        <h1 class="adm-title">Admin Dashboard</h1>
+        <div class="adm-sub">Quick health check across bookings, revenue, agents, trips & alerts.</div>
+
+        <!-- Admin section tabs -->
+        <div class="adm-tabs">
+          <a class="adm-tab active" href="/admin/admin-dashboard">Dashboard</a>
+          <a class="adm-tab" href="/admin/admin-agents">Agents</a>
+          <a class="adm-tab" href="/admin/admin-approvals">Approvals</a>
+          <a class="adm-tab" href="/admin/admin-customers">Customers</a>
+          <a class="adm-tab" href="/admin/admin-trips">Trips</a>
+          <a class="adm-tab" href="/admin/admin-bookings">Bookings</a>
+          <a class="adm-tab" href="/admin/admin-payments">Payments</a>
+          <a class="adm-tab" href="/admin/admin-alerts">Alerts</a>
+        </div>
+      </div>
+
+      <button id="adm-logout-btn" class="logout">Logout</button>
+    </section>
+
+    <!-- KPI BAR -->
+    <section class="kpis">
+      <article class="kpi">
+        <div class="kpi-title">Bookings — Today</div>
+        <div id="adm-kpi-bookings-today" class="kpi-value">--</div>
+        <div id="adm-kpi-bookings-week" class="kpi-sub">This week: --</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Bookings — All time</div>
+        <div id="adm-kpi-bookings-total" class="kpi-value">--</div>
+        <div class="kpi-sub">Across all customers</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Revenue (INR)</div>
+        <div id="adm-kpi-revenue" class="kpi-value">--</div>
+        <div id="adm-kpi-profit" class="kpi-sub">Profit margin: --</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Trips</div>
+        <div id="adm-kpi-trips-active" class="kpi-value">--</div>
+        <div id="adm-kpi-trips-hidden" class="kpi-sub">Hidden/Draft: --</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Users</div>
+        <div id="adm-kpi-users-agents" class="kpi-value">-- agents</div>
+        <div id="adm-kpi-users-customers" class="kpi-sub">Customers: --</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Alerts</div>
+        <div id="adm-kpi-alerts-failed" class="kpi-value">--</div>
+        <div id="adm-kpi-alerts-cancel" class="kpi-sub">Cancellations: --</div>
+      </article>
+    </section>
+
+    <!-- GRID -->
+    <section class="grid">
+      <!-- Latest bookings -->
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">Latest bookings</div>
+          <div id="adm-latest-bookings-sub" class="card-sub">Recent activity</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Trip / Route</th>
+                <th>Passengers</th>
+                <th>Total (₹)</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="adm-latest-bookings-body">
+              <tr><td colspan="7" style="text-align:center;color:#94a3b8;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- Right column -->
+      <section>
+        <!-- Pending approvals -->
+        <article class="card">
+          <div class="card-head">
+            <div class="card-title">Pending agent approvals</div>
+            <div id="adm-approvals-sub" class="card-sub">—</div>
+          </div>
+          <div id="adm-approvals-list" class="list">
+            <div class="item">
+              <div>
+                <h4>Loading pending approvals…</h4>
+                <p>Agents awaiting verification appear here.</p>
+              </div>
+              <span class="badge">Fetching…</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Alerts -->
+        <article class="card" style="margin-top:16px;">
+          <div class="card-head">
+            <div class="card-title">Alerts</div>
+            <div class="card-sub">Payments failed, cancellations, low availability</div>
+          </div>
+          <div id="adm-alerts-list" class="list">
+            <div class="item">
+              <div>
+                <h4>No critical alerts yet</h4>
+                <p>When something needs attention, it shows up here.</p>
+              </div>
+              <span class="badge">OK</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="toast">Saved</div>
+
+  <script>
+    (function () {
+      const logoutBtn = document.getElementById("adm-logout-btn");
+      const toastEl   = document.getElementById("adm-toast");
+
+      // KPI elements
+      const elToday     = document.getElementById("adm-kpi-bookings-today");
+      const elWeek      = document.getElementById("adm-kpi-bookings-week");
+      const elTotal     = document.getElementById("adm-kpi-bookings-total");
+      const elRevenue   = document.getElementById("adm-kpi-revenue");
+      const elProfit    = document.getElementById("adm-kpi-profit");
+      const elTripsAct  = document.getElementById("adm-kpi-trips-active");
+      const elTripsHid  = document.getElementById("adm-kpi-trips-hidden");
+      const elAgents    = document.getElementById("adm-kpi-users-agents");
+      const elCustomers = document.getElementById("adm-kpi-users-customers");
+      const elAFT       = document.getElementById("adm-kpi-alerts-failed");
+      const elAC        = document.getElementById("adm-kpi-alerts-cancel");
+
+      // Latest bookings
+      const latestBody  = document.getElementById("adm-latest-bookings-body");
+      const latestSub   = document.getElementById("adm-latest-bookings-sub");
+
+      // Approvals
+      const approvalsList = document.getElementById("adm-approvals-list");
+      const approvalsSub  = document.getElementById("adm-approvals-sub");
+
+      // Alerts
+      const alertsList = document.getElementById("adm-alerts-list");
+
+      function showToast(msg){
+        if (!toastEl) return;
+        toastEl.textContent = msg || "Saved";
+        toastEl.classList.add("show");
+        setTimeout(()=>toastEl.classList.remove("show"), 1600);
+      }
+
+      async function apiGet(url){
+        try{
+          const res = await fetch(url);
+          if(!res.ok) throw new Error("HTTP " + res.status);
+          return await res.json();
+        }catch(e){
+          return { ok:false, error:e.message };
+        }
+      }
+      async function apiPatch(url, body){
+        try{
+          const res = await fetch(url, {
+            method:"PATCH",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify(body || {})
+          });
+          return await res.json();
+        }catch(e){
+          return { ok:false, error:e.message };
+        }
+      }
+
+      function rupee(n){
+        return new Intl.NumberFormat("en-IN", { style:"currency", currency:"INR", maximumFractionDigits:0 }).format(Number(n||0));
+      }
+      function fmtDate(x){
+        if(!x) return "—";
+        const d = new Date(x);
+        if(isNaN(d)) return "—";
+        return d.toLocaleString();
+      }
+
+      async function loadSummary(){
+        const data = await apiGet("/api/admin/summary");
+        if(!data.ok || !data.cards){
+          elToday.textContent = "--";
+          elWeek.textContent  = "This week: --";
+          elTotal.textContent = "--";
+          elRevenue.textContent = "--";
+          elProfit.textContent = "Profit margin: --";
+          elTripsAct.textContent = "--";
+          elTripsHid.textContent = "Hidden/Draft: --";
+          elAgents.textContent = "-- agents";
+          elCustomers.textContent = "Customers: --";
+          elAFT.textContent = "--";
+          elAC.textContent = "Cancellations: --";
+          return;
+        }
+        const c = data.cards;
+
+        elToday.textContent = c.bookings?.today ?? "--";
+        elWeek.textContent  = "This week: " + (c.bookings?.thisWeek ?? "--");
+        elTotal.textContent = c.bookings?.total ?? "--";
+
+        elRevenue.textContent = rupee(c.revenue?.totalRevenue ?? 0);
+        elProfit.textContent  = "Profit margin: " + (c.profitMargin ?? "--") + "%";
+
+        elTripsAct.textContent = c.trips?.active ?? "--";
+        elTripsHid.textContent = "Hidden/Draft: " + (c.trips?.hidden ?? "--");
+
+        elAgents.textContent    = (c.users?.agents ?? "--") + " agents";
+        elCustomers.textContent = "Customers: " + (c.users?.customers ?? "--");
+
+        elAFT.textContent = c.alerts?.paymentFailed ?? "--";
+        elAC.textContent  = "Cancellations: " + (c.alerts?.cancellations ?? "--");
+
+        // draw alert cards quickly
+        renderAlertsFromSummary(c);
+      }
+
+      async function loadActivity(){
+        const data = await apiGet("/api/admin/activity");
+        if(!latestBody) return;
+
+        if(!data.ok || !Array.isArray(data.recentBookings) || data.recentBookings.length === 0){
+          latestBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No recent bookings</td></tr>';
+          latestSub.textContent = "No activity";
+          return;
+        }
+        latestSub.textContent = data.recentBookings.length + " most recent";
+
+        latestBody.innerHTML = "";
+        data.recentBookings.forEach(b=>{
+          const tr = document.createElement("tr");
+          const payCLS = (b.paymentStatus||"").toLowerCase();
+          const bookCLS = (b.status||"").toLowerCase();
+          tr.innerHTML = `
+            <td>
+              <div><strong>${b.customerName || "Unknown"}</strong></div>
+              <div style="font-size:12px;color:#94a3b8;">${b.customerEmail || "—"}</div>
+            </td>
+            <td style="font-size:12px;">
+              <div>${b.tripTitle || "—"}</div>
+              <div style="color:#94a3b8;">${b.route || ""}</div>
+            </td>
+            <td>${b.passengers ?? 0}</td>
+            <td>${rupee(b.totalAmount || 0)}</td>
+            <td>
+              <span class="status ${payCLS === "paid" ? "s-paid" : payCLS === "failed" ? "s-failed" : "s-pending"}">
+                ${b.paymentStatus || "pending"}
+              </span>
+            </td>
+            <td>
+              <span class="status ${
+                bookCLS === "confirmed" ? "s-confirmed"
+                : bookCLS === "cancelled" ? "s-cancelled"
+                : "s-pending"}">
+                ${b.status || "unconfirmed"}
+              </span>
+            </td>
+            <td style="font-size:12px;color:#94a3b8;">${fmtDate(b.createdAt)}</td>
+          `;
+          latestBody.appendChild(tr);
+        });
+      }
+
+      async function loadPendingApprovals(){
+        if(!approvalsList) return;
+
+        const data = await apiGet("/api/admin/agents?status=pending");
+        if(!data.ok){
+          approvalsList.innerHTML = `
+            <div class="item">
+              <div>
+                <h4>Approvals API unavailable</h4>
+                <p>${data.error || "Endpoint not implemented"} — pending agents can’t be shown.</p>
+              </div>
+              <span class="badge">Check /api/admin/agents</span>
+            </div>`;
+          approvalsSub.textContent = "—";
+          return;
+        }
+
+        const agents = Array.isArray(data.agents) ? data.agents : [];
+        approvalsSub.textContent = agents.length
+          ? `${agents.length} pending`
+          : "No pending applications";
+
+        if(!agents.length){
+          approvalsList.innerHTML = `
+            <div class="item">
+              <div>
+                <h4>No pending approvals 🎉</h4>
+                <p>New agent applications will appear here for review.</p>
+              </div>
+              <span class="badge">All clear</span>
+            </div>`;
+          return;
+        }
+
+        approvalsList.innerHTML = "";
+        agents.forEach(a=>{
+          const div = document.createElement("div");
+          div.className = "item";
+          div.dataset.agentId = a._id;
+          div.innerHTML = `
+            <div>
+              <h4>${a.name || "Unnamed agent"}</h4>
+              <p>
+                ${(a.company || a.agencyName) ? (a.company || a.agencyName) + " · " : ""}${a.email || "—"} ${(a.phone || a.contactNumber) ? "· " + (a.phone || a.contactNumber) : ""}
+              </p>
+              <p style="margin-top:6px;">
+                <span class="badge">KYC: ${a.kycStatus || "not-submitted"}</span>
+                <span class="badge">Trips: ${a.tripsCount ?? 0}</span>
+                <span class="badge">Bookings: ${a.bookingsCount ?? 0}</span>
+              </p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="btn btn-primary" data-role="approve">Approve</button>
+              <button class="btn btn-ghost" data-role="suspend">Reject</button>
+            </div>
+          `;
+          approvalsList.appendChild(div);
+        });
+
+        approvalsList.addEventListener("click", async (e)=>{
+          const btn = e.target.closest("button[data-role]");
+          if(!btn) return;
+          const row = btn.closest(".item");
+          const id = row?.dataset.agentId;
+          if(!id) return;
+
+          const role = btn.dataset.role;
+          const status = role === "approve" ? "active" : "suspended";
+          const res = await apiPatch(`/api/admin/agents/${encodeURIComponent(id)}/status`, { status });
+          if(res.ok){
+            showToast("Agent updated");
+            loadPendingApprovals();
+            loadSummary();
+          }else{
+            showToast("Failed to update agent");
+          }
+        }, { once:false });
+      }
+
+      function renderAlertsFromSummary(cards){
+        if(!alertsList) return;
+        alertsList.innerHTML = "";
+
+        const failed = cards?.alerts?.paymentFailed ?? 0;
+        const canc   = cards?.alerts?.cancellations ?? 0;
+
+        if(failed === 0 && canc === 0){
+          alertsList.innerHTML = `
+            <div class="item">
+              <div>
+                <h4>No critical alerts</h4>
+                <p>Everything looks healthy right now.</p>
+              </div>
+              <span class="badge">OK</span>
+            </div>`;
+          return;
+        }
+
+        if(failed > 0){
+          alertsList.innerHTML += `
+            <div class="item">
+              <div>
+                <h4>${failed} payment${failed>1?"s":""} failed</h4>
+                <p>Review failed transactions and reach out to customers if needed.</p>
+              </div>
+              <a href="/admin/payments" class="btn btn-primary">Review</a>
+            </div>`;
+        }
+        if(canc > 0){
+          alertsList.innerHTML += `
+            <div class="item">
+              <div>
+                <h4>${canc} cancellation${canc>1?"s":""} recorded</h4>
+                <p>Check agent cancellation patterns to mitigate issues.</p>
+              </div>
+              <a href="/admin/bookings" class="btn btn-ghost">Open bookings</a>
+            </div>`;
+        }
+      }
+
+      async function init(){
+        // Logout
+        if (logoutBtn){
+          logoutBtn.addEventListener("click", async ()=>{
+            try{ await fetch("/api/admin/logout", { method:"POST" }); }catch(_){}
+            window.location.href = "/admin/login";
+          });
+        }
+
+        // fill panels
+        await loadSummary();
+        await loadActivity();
+        await loadPendingApprovals();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

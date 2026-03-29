@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TripWise • Admin Customers</title>
+
+  <!-- Same global as admin-login/admin-dashboard -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      /* identical palette to admin-dashboard / admin-login */
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.22), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 46%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    /* top nav (consistent) */
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    /* page shell */
+    .adm-shell{ max-width:1150px; margin:96px auto 40px; padding:0 20px 28px; }
+
+    /* header row */
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .adm-title{ font-size:26px; font-weight:700; letter-spacing:.2px; margin:0; }
+    .adm-sub{ font-size:14px; color:var(--muted); margin-top:4px; }
+
+    /* admin tabs */
+    .adm-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .adm-tab{
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      font-size:13px; font-weight:500;
+      padding:8px 12px; border-radius:999px;
+      text-decoration:none;
+      transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .adm-tab:hover{border-color:rgba(148,163,184,.9);background:#0b1220;transform:translateY(-1px)}
+    .adm-tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:transparent;}
+
+    /* buttons / pills / inputs */
+    .logout{border:1px solid rgba(148,163,184,.5);background:transparent;color:#e5e7eb;padding:8px 14px;border-radius:999px;cursor:pointer}
+    .logout:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+
+    .btn{border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.45)}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#e5e7eb;border:1px solid rgba(148,163,184,.5)}
+    .btn-ghost:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+
+    .pill{ display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;text-transform:capitalize }
+    .s-active{  background:rgba(34,197,94,.18); color:#4ade80; border:1px solid rgba(34,197,94,.35) }
+    .s-suspended{background:rgba(239,68,68,.14); color:#f87171; border:1px solid rgba(239,68,68,.32) }
+
+    .badge{
+      font-size:11px;border:1px solid rgba(148,163,184,.45);
+      padding:4px 8px;border-radius:999px;color:#cbd5e1;background:#0b1220
+    }
+
+    .select, .input{
+      background:#0b1220;border:1px solid var(--border);color:#e5e7eb;
+      border-radius:12px;padding:8px 12px;font-size:13px;outline:none;
+    }
+    .input::placeholder{color:#6b7280}
+
+    /* cards */
+    .card{
+      background: linear-gradient(145deg,#030712,#0b1220);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 18px;
+    }
+    .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+    .card-title{font-size:16px;font-weight:600}
+    .card-sub{font-size:12px;color:var(--muted)}
+
+    /* table */
+    .table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--border);margin-top:10px}
+    table{width:100%;border-collapse:collapse;background:#0b1220}
+    thead tr{background:#0f172a}
+    th,td{font-size:13px;padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    th{color:#cbd5e1}
+    tbody tr:hover{background:#0e1526}
+
+    /* expandable bookings panel */
+    .expand{
+      background:#071024;
+      border-top:1px dashed rgba(148,163,184,.28);
+      padding:10px;
+    }
+    .exp-title{font-size:13px;font-weight:600;margin-bottom:6px}
+    .exp-note{font-size:12px;color:#9ca3af}
+    .exp-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+    @media (max-width:900px){.exp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);
+      padding:10px 16px;border-radius:999px;background:rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);color:#e5e7eb;font-size:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.16s;z-index:40
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+
+    /* controls row */
+    .controls{display:flex;flex-wrap:wrap;gap:8px}
+    .controls > *{min-height:38px}
+    .spacer{flex:1}
+    .pager{display:flex;align-items:center;gap:8px}
+    .page-pill{border:1px solid rgba(148,163,184,.45);border-radius:10px;padding:6px 10px;font-size:12px}
+  </style>
+</head>
+<body>
+  <!-- Top Navigation (same as admin-login/dashboard) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="adm-shell">
+    <!-- Header -->
+    <section class="adm-head">
+      <div>
+        <h1 class="adm-title">Customers</h1>
+        <div class="adm-sub">Browse all customers, review spend & bookings, and manage account status.</div>
+
+        <div class="adm-tabs">
+          <a class="adm-tab" href="/admin/admin-dashboard">Dashboard</a>
+          <a class="adm-tab" href="/admin/admin-agents">Agents</a>
+          <a class="adm-tab" href="/admin/admin-approvals">Approvals</a>
+          <a class="adm-tab active" href="/admin/admin-customers">Customers</a>
+          <a class="adm-tab" href="/admin/admin-trips">Trips</a>
+          <a class="adm-tab" href="/admin/admin-bookings">Bookings</a>
+          <a class="adm-tab" href="/admin/admin-payments">Payments</a>
+          <a class="adm-tab" href="/admin/admin-alerts">Alerts</a>
+        </div>
+      </div>
+
+      <button id="adm-logout-btn" class="logout">Logout</button>
+    </section>
+
+    <!-- Controls -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">Filters</div>
+        <div class="card-sub">Search, sort and export customers</div>
+      </div>
+      <div class="controls">
+        <input id="c-q" class="input" type="search" placeholder="Search name, email, phone…"/>
+        <select id="c-sort" class="select">
+          <option value="-lastBookingAt">Newest booking</option>
+          <option value="lastBookingAt">Oldest booking</option>
+          <option value="-totalSpent">Highest spend</option>
+          <option value="totalSpent">Lowest spend</option>
+          <option value="name">Name (A→Z)</option>
+          <option value="-name">Name (Z→A)</option>
+          <option value="-createdAt">Newest customer</option>
+          <option value="createdAt">Oldest customer</option>
+        </select>
+        <select id="c-status" class="select">
+          <option value="">Any status</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+        </select>
+        <button id="c-apply" class="btn btn-ghost">Apply</button>
+        <div class="spacer"></div>
+        <button id="c-export" class="btn btn-primary">Export CSV</button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card" style="margin-top:16px;">
+      <div class="card-head">
+        <div class="card-title">All customers</div>
+        <div id="c-sub" class="card-sub">—</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name / Email</th>
+              <th>Phone</th>
+              <th>Total Bookings</th>
+              <th>Total Spent (₹)</th>
+              <th>Last Booking</th>
+              <th>Status</th>
+              <th style="width:240px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="c-body">
+            <tr><td colspan="7" style="text-align:center;color:#94a3b8;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager" style="margin-top:10px;">
+        <button id="pg-prev" class="btn btn-ghost">Prev</button>
+        <span id="pg-info" class="page-pill">Page 1 / 1</span>
+        <button id="pg-next" class="btn btn-ghost">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="toast">Saved</div>
+
+  <script>
+    (function(){
+      const logoutBtn = document.getElementById("adm-logout-btn");
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", async ()=>{
+          try{ await fetch("/api/admin/logout", { method:"POST" }); }catch(_){}
+          window.location.href="/admin/login";
+        });
+      }
+
+      // Controls
+      const qEl      = document.getElementById("c-q");
+      const sortEl   = document.getElementById("c-sort");
+      const statusEl = document.getElementById("c-status");
+      const applyEl  = document.getElementById("c-apply");
+      const exportEl = document.getElementById("c-export");
+
+      // Table / meta
+      const bodyEl = document.getElementById("c-body");
+      const subEl  = document.getElementById("c-sub");
+
+      // Pagination
+      const prevEl = document.getElementById("pg-prev");
+      const nextEl = document.getElementById("pg-next");
+      const infoEl = document.getElementById("pg-info");
+      let page = 1, limit = 10, totalPages = 1, totalCount = 0;
+
+      // Toast
+      const toast = document.getElementById("adm-toast");
+      function showToast(msg){
+        toast.textContent = msg || "Saved";
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"), 1400);
+      }
+
+      function rupee(n){
+        return new Intl.NumberFormat("en-IN", { style:"currency", currency:"INR", maximumFractionDigits:0 }).format(Number(n||0));
+      }
+      function fmtDate(x){
+        if(!x) return "—";
+        const d = new Date(x);
+        if(isNaN(d)) return "—";
+        return d.toLocaleString();
+      }
+      function qs(params){
+        const usp = new URLSearchParams();
+        Object.entries(params).forEach(([k,v])=>{
+          if(v !== undefined && v !== null && String(v).trim() !== "") usp.set(k, v);
+        });
+        return usp.toString() ? ("?" + usp.toString()) : "";
+      }
+
+      async function apiGet(url){
+        try{
+          const r = await fetch(url);
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiPatch(url, body){
+        try{
+          const r = await fetch(url, {
+            method:"PATCH",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify(body||{})
+          });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+
+      function renderRows(customers){
+        if(!Array.isArray(customers) || customers.length === 0){
+          bodyEl.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No customers found</td></tr>';
+          return;
+        }
+        bodyEl.innerHTML = "";
+        customers.forEach(c=>{
+          const tr = document.createElement("tr");
+          tr.dataset.id = c._id;
+
+          const status = (c.status || "active").toLowerCase();
+          const pillCls = status === "suspended" ? "s-suspended" : "s-active";
+
+          tr.innerHTML = `
+            <td>
+              <div><strong>${c.name || "Unnamed"}</strong></div>
+              <div style="font-size:12px;color:#94a3b8;">${c.email || "—"}</div>
+            </td>
+            <td>${c.phone || c.contactNumber || "—"}</td>
+            <td>${c.totalBookings ?? 0}</td>
+            <td>${rupee(c.totalSpent || 0)}</td>
+            <td style="font-size:12px;color:#94a3b8;">${fmtDate(c.lastBookingAt)}</td>
+            <td><span class="pill ${pillCls}">${status}</span></td>
+            <td>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-primary" data-action="expand">View bookings</button>
+                ${
+                  status === "suspended"
+                  ? `<button class="btn btn-ghost" data-action="activate">Activate</button>`
+                  : `<button class="btn btn-danger" data-action="suspend">Suspend</button>`
+                }
+                <button class="btn btn-ghost" data-action="copyEmail">Copy email</button>
+                <button class="btn btn-ghost" data-action="copyPhone">Copy phone</button>
+              </div>
+            </td>
+          `;
+
+          bodyEl.appendChild(tr);
+
+          // expandable row
+          const exp = document.createElement("tr");
+          exp.className = "expand-row";
+          exp.style.display = "none";
+          exp.innerHTML = `
+            <td colspan="7">
+              <div class="expand">
+                <div class="exp-title">Recent bookings</div>
+                <div class="exp-note" data-exp-note>Loading bookings…</div>
+                <div class="exp-grid" data-exp-grid></div>
+              </div>
+            </td>
+          `;
+          bodyEl.appendChild(exp);
+        });
+      }
+
+      async function loadCustomers(){
+        const params = {
+          search: (qEl.value||"").trim(),
+          sort: sortEl.value || "",
+          status: statusEl.value || "",
+          page, limit
+        };
+        const data = await apiGet("/api/admin/customers" + qs(params));
+
+        if(!data.ok){
+          bodyEl.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align:center;color:#94a3b8;">
+                ${data.error || "Customers API unavailable"} — implement GET /api/admin/customers
+              </td>
+            </tr>`;
+          subEl.textContent = "—";
+          infoEl.textContent = "Page 1 / 1";
+          totalPages = 1; totalCount = 0;
+          return;
+        }
+
+        // Expected payload shape:
+        // { ok:true, customers:[{_id,name,email,phone,totalBookings,totalSpent,lastBookingAt,status}], page, totalPages, total }
+        renderRows(data.customers || []);
+        page = data.page || 1;
+        totalPages = data.totalPages || 1;
+        totalCount = data.total || (data.customers ? data.customers.length : 0);
+
+        subEl.textContent = `${totalCount} result${totalCount===1?"":"s"} • page ${page}/${totalPages}`;
+        infoEl.textContent = `Page ${page} / ${totalPages}`;
+      }
+
+      async function loadCustomerBookings(customerId, holderRow){
+        // elements inside the expand row
+        const note = holderRow.querySelector("[data-exp-note]");
+        const grid = holderRow.querySelector("[data-exp-grid]");
+        note.textContent = "Loading bookings…";
+        grid.innerHTML = "";
+
+        const data = await apiGet(`/api/admin/customers/${encodeURIComponent(customerId)}/bookings`);
+        if(!data.ok || !Array.isArray(data.bookings) || data.bookings.length === 0){
+          note.textContent = data.error ? String(data.error) : "No recent bookings";
+          return;
+        }
+        note.textContent = "";
+
+        data.bookings.slice(0, 10).forEach(b=>{
+          const card = document.createElement("div");
+          card.className = "card";
+          card.style.padding = "10px";
+          card.innerHTML = `
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px;">
+              ${b.tripTitle || "—"} <span class="badge">${(b.route || "").replace("undefined","")}</span>
+            </div>
+            <div style="font-size:12px;color:#9ca3af;">${(b.passengers ?? 0)} pax • ${rupee(b.totalAmount||0)}</div>
+            <div style="font-size:12px;color:#9ca3af;">${(b.paymentStatus||"pending")} • ${(b.status||"unconfirmed")}</div>
+            <div style="font-size:12px;color:#9ca3af;">Booked: ${fmtDate(b.createdAt)}</div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      function copyText(text){
+        try{
+          navigator.clipboard.writeText(text || "");
+          showToast("Copied");
+        }catch(_){ showToast("Copy failed"); }
+      }
+
+      // Events
+      applyEl.addEventListener("click", ()=>{ page=1; loadCustomers(); });
+      qEl.addEventListener("keydown", e=>{ if(e.key==="Enter"){ page=1; loadCustomers(); } });
+
+      prevEl.addEventListener("click", ()=>{ if(page>1){ page--; loadCustomers(); } });
+      nextEl.addEventListener("click", ()=>{ if(page<totalPages){ page++; loadCustomers(); } });
+
+      bodyEl.addEventListener("click", async (e)=>{
+        const btn = e.target.closest("button[data-action]");
+        if(!btn) return;
+
+        const tr = btn.closest("tr");
+        if(!tr) return;
+        const id = tr.dataset.id;
+
+        const action = btn.dataset.action;
+        if(action === "copyEmail"){
+          const email = tr.querySelector("td:nth-child(1) div:nth-child(2)")?.textContent?.trim();
+          copyText(email);
+          return;
+        }
+        if(action === "copyPhone"){
+          const phone = tr.querySelector("td:nth-child(2)")?.textContent?.trim();
+          copyText(phone);
+          return;
+        }
+        if(action === "expand"){
+          const expRow = tr.nextElementSibling;
+          if(!expRow || !expRow.classList.contains("expand-row")) return;
+          const open = expRow.style.display !== "none";
+          expRow.style.display = open ? "none" : "";
+          if(!open){
+            loadCustomerBookings(id, expRow);
+          }
+          return;
+        }
+        if(action === "suspend" || action === "activate"){
+          const status = action === "suspend" ? "suspended" : "active";
+          const res = await apiPatch(`/api/admin/customers/${encodeURIComponent(id)}/status`, { status });
+          if(res.ok){
+            showToast("Customer updated");
+            loadCustomers();
+          }else{
+            showToast("Update failed");
+          }
+          return;
+        }
+      });
+
+      // Export CSV (client-side)
+      exportEl.addEventListener("click", async ()=>{
+        const params = {
+          search: (qEl.value||"").trim(),
+          sort: sortEl.value || "",
+          status: statusEl.value || "",
+          page: 1,
+          limit: 1000 // export up to 1000; adjust as needed
+        };
+        const data = await apiGet("/api/admin/customers" + qs(params));
+        if(!data.ok || !Array.isArray(data.customers) || data.customers.length===0){
+          showToast("Nothing to export");
+          return;
+        }
+        const rows = [
+          ["Name","Email","Phone","TotalBookings","TotalSpent(INR)","LastBookingAt","Status"]
+        ];
+        data.customers.forEach(c=>{
+          rows.push([
+            c.name || "",
+            c.email || "",
+            c.phone || c.contactNumber || "",
+            String(c.totalBookings ?? 0),
+            String(c.totalSpent ?? 0),
+            c.lastBookingAt ? new Date(c.lastBookingAt).toISOString() : "",
+            c.status || "active"
+          ]);
+        });
+
+        const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `tripwise-customers-${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast("CSV exported");
+      });
+
+      // Initial load
+      loadCustomers();
+    })();
+  </script>
+</body>
+</html>

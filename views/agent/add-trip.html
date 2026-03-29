@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TripAdvisor • Add Trip (Agent)</title>
+
+  <!-- keep global base styles if you have them -->
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <style>
+    /* ---------- SHARED AGENT NAV (aligned with Bookings page) ---------- */
+    :root {
+      /* existing add-trip vars */
+      --tw-bg: #020617;
+      --tw-card: #020617f2;
+      --tw-border-subtle: rgba(15,23,42,0.85);
+      --tw-muted: #9ca3af;
+      --tw-primary: #2563eb;
+      --tw-primary-dark: #1d4ed8;
+      --tw-primary-soft: rgba(37,99,235,0.16);
+      --tw-text: #e5e7eb;
+
+      /* nav / bookings-style vars */
+      --bg: #020617;
+      --card: #020617;
+      --border-subtle: #1e293b;
+      --accent: #2563eb;
+      --accent-soft: #1d4ed8;
+      --text-main: #e5e7eb;
+      --text-soft: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Poppins",sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+      color: var(--tw-text);
+    }
+
+    /* outer shell (same as bookings page) */
+    .tw-agent-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 20px 32px;
+    }
+
+    /* pill nav */
+    .tw-agent-nav {
+      height: 60px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      margin-bottom: 28px;
+      backdrop-filter: blur(20px);
+    }
+
+    .tw-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tw-logo-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9fafb;
+      color: #020617;
+      font-weight: 700;
+    }
+    .tw-logo-text {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .tw-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tw-nav-link {
+      border-radius: 999px;
+      padding: 8px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tw-nav-link:hover {
+      color: var(--text-main);
+      background: rgba(30, 64, 175, 0.25);
+    }
+    .tw-nav-link.tw-active {
+      background: var(--accent);
+      color: #f9fafb;
+      font-weight: 500;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.5),
+        0 12px 30px rgba(37, 99, 235, 0.4);
+    }
+
+    /* ---------- PAGE-SPECIFIC ADD-TRIP STYLES (unchanged layout) ---------- */
+    .agt-wrap {
+      max-width: 1040px;
+      margin: 96px auto 40px;
+      padding: 0 20px;
+    }
+
+    .agt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+    }
+    .agt-header h1 {
+      font-size: 22px;
+      color: #e5e7eb;
+      margin: 0;
+    }
+    .agt-header p {
+      font-size: 13px;
+      color: var(--tw-muted);
+      margin: 4px 0 0;
+    }
+
+    .agt-card {
+      background: linear-gradient(145deg, #020617f2, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 20px 22px 18px;
+      color: #e5e7eb;
+      /* allow internal scroll when content grows */
+      max-height: calc(100vh - 210px);
+      overflow-y: auto;
+    }
+
+    .agt-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.2fr);
+      gap: 18px;
+    }
+
+    .agt-label {
+      display: block;
+      font-size: 12px;
+      color: var(--tw-muted);
+      margin-bottom: 4px;
+    }
+    .agt-input,
+    .agt-textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1px solid var(--agt-border, #1f2937);
+      background: #020617;
+      color: #f9fafb;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .agt-input::placeholder,
+    .agt-textarea::placeholder {
+      color: #6b7280;
+    }
+    .agt-input:focus,
+    .agt-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(37,99,235,.55), 0 0 0 6px rgba(37,99,235,.18);
+    }
+    .agt-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .agt-textarea-itinerary {
+      min-height: 140px;
+    }
+
+    .agt-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .agt-btn-primary {
+      border-radius: 999px;
+      border: none;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--tw-primary), var(--tw-primary-dark));
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(37,99,235,.55);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+      margin-top: 8px;
+    }
+    .agt-btn-primary:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 38px rgba(37,99,235,.6);
+    }
+    .agt-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 11px 24px rgba(37,99,235,.45);
+    }
+
+    .agt-muted-note {
+      font-size: 11px;
+      color: var(--tw-muted);
+      margin-top: 6px;
+    }
+
+    .agt-alert {
+      margin-top: 10px;
+      font-size: 12px;
+      display: none;
+    }
+    .agt-alert.ok {
+      color: #4ade80;
+    }
+    .agt-alert.err {
+      color: #f97373;
+    }
+    .agt-alert.show {
+      display: block;
+    }
+
+    /* upload UI */
+    .agt-upload-wrap {
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .agt-upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: transparent;
+      color: #e5e7eb;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .agt-upload-btn:hover {
+      background: rgba(148,163,184,0.08);
+    }
+    .agt-upload-file-name {
+      display: inline-block;
+      margin-left: 10px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .agt-img-preview {
+      margin-top: 8px;
+      border-radius: 14px;
+      max-width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border: 1px solid rgba(15,23,42,0.9);
+      display: none;
+    }
+    .agt-input-hidden {
+      display: none;
+    }
+
+    /* small thumbnails for gallery */
+    .agt-img-thumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .agt-img-thumb {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid rgba(15,23,42,0.9);
+    }
+  </style>
+</head>
+<body>
+  <div class="tw-agent-shell">
+    <!-- same pill-style nav as Bookings, with Add Trip active -->
+    <header class="tw-agent-nav">
+      <div class="tw-nav-left">
+        <div class="tw-logo-circle">T</div>
+        <div class="tw-logo-text">TripAdvisor</div>
+      </div>
+      <nav class="tw-nav-right">
+        <button class="tw-nav-link" onclick="window.location.href='/agent/dashboard'">
+          Dashboard  
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/trips'">
+          My Trips
+        </button>
+        <button class="tw-nav-link tw-active" onclick="window.location.href='/agent/trips/new'">
+          Add Trip
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/bookings'">
+          Bookings
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/profile'">
+          Profile
+        </button>
+        <button class="tw-nav-link" id="tw-logout-btn">
+          Logout
+        </button>
+      </nav>
+    </header>
+
+    <main class="agt-wrap">
+      <header class="agt-header">
+        <div>
+          <h1>Add a new trip package</h1>
+          <p>Fill in trip details, stays, food and sightseeing. Customers will see this on the dashboard.</p>
+        </div>
+      </header>
+
+      <section class="agt-card">
+        <form id="agentTripForm">
+          <div class="agt-grid">
+            <!-- LEFT: main info -->
+            <div>
+              <label class="agt-label" for="agt-title">Trip title</label>
+              <input id="agt-title" class="agt-input" type="text" placeholder="Goa Beach Escape" required />
+
+              <div class="agt-row">
+                <div>
+                  <!-- Source city is optional because customers can be from anywhere -->
+                  <label class="agt-label" for="agt-src">Source city (optional)</label>
+                  <input
+                    id="agt-src"
+                    class="agt-input"
+                    type="text"
+                    placeholder="Any city / All origins"
+                  />
+                </div>
+                <div>
+                  <label class="agt-label" for="agt-dst">Destination city</label>
+                  <input id="agt-dst" class="agt-input" type="text" placeholder="Goa" required />
+                </div>
+              </div>
+
+              <div class="agt-row">
+                <div>
+                  <label class="agt-label" for="agt-days">Duration (days)</label>
+                  <input id="agt-days" class="agt-input" type="number" min="1" value="4" required />
+                </div>
+                <div>
+                  <label class="agt-label" for="agt-price">Price / person / day (₹)</label>
+                  <input id="agt-price" class="agt-input" type="number" min="1000" step="100" value="3500" required />
+                </div>
+              </div>
+
+              <!-- Upload hero + gallery images -->
+              <label class="agt-label">Images (hero + gallery)</label>
+              <div class="agt-upload-wrap">
+                <button type="button" class="agt-upload-btn" id="agt-img-upload-btn">
+                  ⬆ Upload images
+                </button>
+                <span class="agt-upload-file-name" id="agt-img-file-name">No files selected</span>
+                <input
+                  type="file"
+                  id="agt-img-file"
+                  accept="image/*"
+                  multiple
+                  style="display:none;"
+                />
+              </div>
+              <!-- hidden inputs used by JS & backend -->
+              <!-- hero image (first image) -->
+              <input
+                id="agt-img"
+                class="agt-input agt-input-hidden"
+                type="text"
+                readonly
+              />
+              <!-- gallery images as JSON array of data URLs -->
+              <input
+                id="agt-imgs"
+                class="agt-input agt-input-hidden"
+                type="text"
+                readonly
+              />
+              <img id="agt-img-preview" class="agt-img-preview" alt="Image preview" />
+              <div id="agt-img-thumbs" class="agt-img-thumbs"></div>
+              <p class="agt-muted-note">
+                First image becomes the main card image. You can select multiple files; the rest will appear in the gallery on the trip details page.
+              </p>
+            </div>
+
+            <!-- RIGHT: details -->
+            <div>
+              <label class="agt-label" for="agt-hotels">
+                Hotels / stays
+                <span style="font-weight:400;color:#6b7280;">(one per line, format: <strong>Hotel Name - near beach @2</strong> where @2 = 2 nights)</span>
+              </label>
+              <textarea id="agt-hotels" class="agt-textarea" placeholder="Sea View Resort - Beachfront villa @2&#10;Hilltop Retreat - City view @1"></textarea>
+
+              <label class="agt-label" for="agt-restaurants">
+                Restaurants
+                <span style="font-weight:400;color:#6b7280;">(one per line, format: <strong>Name - short description</strong>)</span>
+              </label>
+              <textarea id="agt-restaurants" class="agt-textarea" placeholder="Fisherman's Cove - Seafood dinner&#10;Cafe Azul - Poolside breakfast"></textarea>
+
+              <label class="agt-label" for="agt-sights">
+                Sightseeing spots
+                <span style="font-weight:400;color:#6b7280;">(one per line, format: <strong>Name - highlight</strong>)</span>
+              </label>
+              <textarea id="agt-sights" class="agt-textarea" placeholder="Baga Beach - Sunset & water sports&#10;Old Goa Churches - Heritage walk"></textarea>
+
+              <!-- Day-wise itinerary field -->
+              <label class="agt-label" for="agt-itinerary">
+                Day-wise itinerary (optional)
+                <span style="font-weight:400;color:#6b7280;">
+                  (one day per block, e.g. <strong>Day 1 - Dudhsagar Falls, Jeep Safari; Hotel: XYZ Resort</strong>)
+                </span>
+              </label>
+              <textarea
+                id="agt-itinerary"
+                class="agt-textarea agt-textarea-itinerary"
+                placeholder="Day 1 - Airport pickup, hotel check-in, evening at Baga Beach; Hotel: Sea View Resort&#10;&#10;Day 2 - Dudhsagar Falls jeep safari, spice plantation visit; Hotel: Sea View Resort&#10;&#10;Day 3 - Water sports, shopping, airport drop; Hotel: Sea View Resort"
+              ></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="agt-btn-primary">Publish trip</button>
+          <p class="agt-muted-note">
+            Once published, your package will appear in trip suggestions for customers whose filters match this route and budget.
+          </p>
+
+          <div id="agt-alert" class="agt-alert"></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const alertEl = document.getElementById("agt-alert");
+
+      function showAlert(msg, ok = false) {
+        alertEl.textContent = msg;
+        alertEl.classList.add("show");
+        alertEl.classList.toggle("ok", ok);
+        alertEl.classList.toggle("err", !ok);
+      }
+
+      async function ensureAgent() {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (!res.ok) {
+            window.location.href = "/";
+            return;
+          }
+          const data = await res.json();
+          if (!data.ok || !data.user || data.user.role !== "agent") {
+            window.location.href = "/";
+          }
+        } catch (e) {
+          window.location.href = "/";
+        }
+      }
+
+      ensureAgent();
+
+      // ---- Image upload handling: hero + gallery ----
+      const fileInput    = document.getElementById("agt-img-file");
+      const uploadBtn    = document.getElementById("agt-img-upload-btn");
+      const fileNameEl   = document.getElementById("agt-img-file-name");
+      const hiddenImgEl  = document.getElementById("agt-img");    // hero
+      const hiddenImgsEl = document.getElementById("agt-imgs");   // gallery JSON
+      const previewEl    = document.getElementById("agt-img-preview");
+      const thumbsEl     = document.getElementById("agt-img-thumbs");
+
+      uploadBtn.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", () => {
+        const files = Array.from(fileInput.files || []);
+        if (!files.length) return;
+
+        const invalid = files.some((f) => !f.type.startsWith("image/"));
+        if (invalid) {
+          showAlert("Please select only image files (JPEG, PNG, etc.)");
+          fileInput.value = "";
+          return;
+        }
+
+        fileNameEl.textContent =
+          files.length === 1 ? files[0].name : `${files.length} images selected`;
+
+        // clear previous state
+        hiddenImgEl.value = "";
+        hiddenImgsEl.value = "";
+        previewEl.style.display = "none";
+        previewEl.src = "";
+        thumbsEl.innerHTML = "";
+
+        const dataUrls = new Array(files.length);
+        let loaded = 0;
+
+        files.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            dataUrls[index] = dataUrl;
+            loaded++;
+
+            // first image = hero
+            if (index === 0) {
+              hiddenImgEl.value = dataUrl;
+              previewEl.src = dataUrl;
+              previewEl.style.display = "block";
+            }
+
+            // thumbnail
+            const img = document.createElement("img");
+            img.src = dataUrl;
+            img.className = "agt-img-thumb";
+            thumbsEl.appendChild(img);
+
+            // when all files loaded, store gallery JSON
+            if (loaded === files.length) {
+              hiddenImgsEl.value = JSON.stringify(dataUrls);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      // ---- Form submit ----
+      document.getElementById("agentTripForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        alertEl.classList.remove("show");
+
+        // make source city optional; default to "Any city"
+        const rawSrc = document.getElementById("agt-src").value.trim();
+        const src = rawSrc || "Any city";
+
+        const imgsJson = hiddenImgsEl.value;
+        let imgs = [];
+        if (imgsJson) {
+          try {
+            imgs = JSON.parse(imgsJson);
+          } catch {
+            imgs = [];
+          }
+        }
+
+        const payload = {
+          title: document.getElementById("agt-title").value.trim(),
+          src,
+          dst: document.getElementById("agt-dst").value.trim(),
+          durationDays: document.getElementById("agt-days").value,
+          pricePerPersonPerDay: document.getElementById("agt-price").value,
+          img: hiddenImgEl.value.trim(),        // hero image
+          imgs,                                 // gallery array
+          hotelsText: document.getElementById("agt-hotels").value,
+          restaurantsText: document.getElementById("agt-restaurants").value,
+          sightseeingText: document.getElementById("agt-sights").value,
+          itineraryText: document.getElementById("agt-itinerary").value,
+        };
+
+        try {
+          const res = await fetch("/api/agent/trips", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!data.ok) {
+            throw new Error(data.error || "Failed to publish trip");
+          }
+
+          showAlert("Trip published successfully ✔", true);
+        } catch (err) {
+          showAlert(err.message || "Something went wrong while saving trip");
+        }
+      });
+
+      // logout button – matches nav id
+      const logoutBtn = document.getElementById("tw-logout-btn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+          try {
+            await fetch("/api/auth/logout", { method: "POST" });
+          } finally {
+            window.location.href = "/agent/login";
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

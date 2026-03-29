@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TripAdvisor • Dashboard</title>
+
+  <!-- GLOBAL DASHBOARD STYLES (existing shared CSS) -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <!-- NAV + AUTH MODAL STYLES (scoped here only) -->
+  <style>
+    :root {
+      --tw-surface: #020617;
+      --tw-surface-elevated: #020617f2;
+      --tw-border-soft: #1f2937;
+      --tw-muted: #9ca3af;
+      --tw-primary: #2563eb;
+      --tw-primary-dark: #1d4ed8;
+    }
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Poppins",sans-serif;
+    }
+
+    /* ------------ NAV OVERRIDES (align nav pills + auth buttons) ------------ */
+    .nav .links {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .nav .link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 14px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .nav .link:hover {
+      background: rgba(24, 38, 69, 0.7);
+    }
+    .nav .link.active {
+      color: #60a5fa;
+      font-weight: 600;
+    }
+    .tw-nav-auth-btn {
+      border: none;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      padding: 0;
+    }
+    .tw-nav-auth-btn:focus {
+      outline: none;
+    }
+
+    /* --------------------------- AUTH OVERLAY --------------------------- */
+    .tw-auth-overlay {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at top, rgba(59,130,246,.22), transparent 55%),
+        rgba(15,23,42,.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .tw-auth-overlay.tw-open {
+      display: flex;
+    }
+
+    /* --------------------------- AUTH MODAL --------------------------- */
+    .tw-auth-modal {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 26px;
+      padding: 0;
+      border: 1px solid rgba(148,163,184,.4);
+      box-shadow:
+        0 26px 70px rgba(15,23,42,.9),
+        0 0 0 1px rgba(15,23,42,.9);
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,.18), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(56,189,248,.14), transparent 60%),
+        linear-gradient(145deg,#020617,#020617ee);
+      transform: translateY(10px) scale(.96);
+      opacity: 0;
+      transition: opacity .18s ease-out, transform .18s ease-out;
+    }
+    .tw-auth-overlay.tw-open .tw-auth-modal {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .tw-auth-inner {
+      display: grid;
+      grid-template-columns: minmax(0,1.3fr) minmax(0,1.7fr);
+    }
+    .tw-auth-side {
+      padding: 18px 18px 18px 20px;
+      border-right: 1px solid rgba(15,23,42,.8);
+      background:
+        radial-gradient(circle at top, rgba(37,99,235,.25), transparent 55%),
+        rgba(15,23,42,.96);
+    }
+    .tw-auth-side h1 {
+      font-size: 22px;
+      margin: 4px 0 8px;
+    }
+    .tw-auth-side p {
+      font-size: 13px;
+      color: var(--tw-muted);
+      margin: 0 0 12px;
+    }
+    .tw-auth-pill-list {
+      font-size: 12px;
+      display: grid;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .tw-auth-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.35);
+      background: rgba(15,23,42,.94);
+    }
+    .tw-auth-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+    .tw-auth-kicker {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      color: #60a5fa;
+    }
+
+    .tw-auth-main {
+      padding: 18px 22px 20px 20px;
+      position: relative;
+    }
+
+    .tw-auth-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .tw-auth-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: .02em;
+    }
+    .tw-auth-close {
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px;
+      border-radius: 999px;
+      transition: background .15s ease,color .15s ease;
+    }
+    .tw-auth-close:hover {
+      background: rgba(148,163,184,.16);
+      color: #e5e7eb;
+    }
+
+    .tw-auth-tabs {
+      display: flex;
+      margin-bottom: 14px;
+      border-radius: 999px;
+      padding: 3px;
+      background: rgba(15,23,42,.94);
+      border: 1px solid rgba(15,23,42,.9);
+    }
+    .tw-auth-tab {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      padding: 7px 0;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--tw-muted);
+      cursor: pointer;
+      transition: background .18s ease,color .18s ease,box-shadow .18s ease;
+    }
+    .tw-auth-tab.tw-active {
+      background: linear-gradient(135deg,var(--tw-primary),var(--tw-primary-dark));
+      color: #f9fafb;
+      font-weight: 600;
+      box-shadow: 0 0 0 1px rgba(15,23,42,.9);
+    }
+
+    .tw-auth-body {
+      margin-top: 4px;
+    }
+    .tw-auth-label {
+      display: block;
+      font-size: 11px;
+      color: var(--tw-muted);
+      margin-bottom: 4px;
+      text-align: left;
+    }
+    .tw-auth-input {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 11px;
+      border: 1px solid var(--tw-border-soft);
+      background: #020617;
+      color: #f9fafb;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .tw-auth-input::placeholder {
+      color: #6b7280;
+    }
+    .tw-auth-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(37,99,235,.55), 0 0 0 6px rgba(37,99,235,.2);
+      background: #020617;
+    }
+
+    .tw-auth-btn {
+      width: 100%;
+      border-radius: 999px;
+      padding: 11px 14px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      margin-top: 4px;
+      background: linear-gradient(135deg,var(--tw-primary),var(--tw-primary-dark));
+      color: #f9fafb;
+      box-shadow: 0 14px 28px rgba(37,99,235,.58);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+    }
+    .tw-auth-btn:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 36px rgba(37,99,235,.6);
+    }
+    .tw-auth-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 22px rgba(37,99,235,.45);
+    }
+
+    .tw-auth-muted {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--tw-muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+    .tw-auth-muted a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+    .tw-auth-muted a:hover {
+      text-decoration: underline;
+    }
+
+    .tw-auth-error {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #f97373;
+      min-height: 15px;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      .tw-auth-inner {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .tw-auth-side {
+        display: none;
+      }
+      .tw-auth-main {
+        padding: 18px 18px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripAdvisor</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link active">Dashboard</a>
+        <a href="/ai-trips" class="link">AI Trips</a>
+        <a href="/about" class="link">About</a>
+        <a href="/profile" class="link">Profile</a>
+        <button id="nav-login-btn" class="link tw-nav-auth-btn">Login</button>
+        <button id="nav-logout-btn" class="link tw-nav-auth-btn" style="display:none;">Logout</button>
+        
+        
+
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <!-- FILTER SECTION -->
+    <section class="card">
+      <h2>Plan your trip</h2>
+      <p class="muted">Pick source, destination, dates and your budget per person/day.</p>
+      <div class="grid g-6">
+        <div>
+          <label for="src">Source</label>
+          <select id="src"><option value="">Any</option></select>
+        </div>
+        <div>
+          <label for="dst">Destination</label>
+          <select id="dst"><option value="">Any</option></select>
+        </div>
+        <div>
+          <label for="fromDate">From Date</label>
+          <input type="date" id="fromDate"/>
+        </div>
+        <div>
+          <label for="toDate">To Date</label>
+          <input type="date" id="toDate"/>
+        </div>
+        <div>
+          <label for="budget">Budget / person / day (₹)</label>
+          <input type="number" id="budget" min="1000" step="100" placeholder="4000"/>
+        </div>
+        <div class="align-end">
+          <button id="searchBtn" class="btn btn-primary">Search</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS HEADER -->
+    <div class="section">
+      <h3>Suggested trips</h3>
+      <span id="resultCount" class="muted"></span>
+    </div>
+
+    <!-- CARDS GRID -->
+    <section id="cards" class="cards"></section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>© <span id="yr"></span> TripAdvisor</span>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast">Added to selection</div>
+
+  <!-- AUTH POPUP (sign up + login, redesigned) -->
+  <div id="tw-auth-overlay" class="tw-auth-overlay">
+    <div class="tw-auth-modal">
+      <div class="tw-auth-inner">
+        <!-- LEFT PANEL (static info) -->
+        <aside class="tw-auth-side">
+          <div class="tw-auth-kicker">TripAdvisor</div>
+          <h1>Smarter trip planning</h1>
+          <p>Save your favourite routes, sync bookings and let our AI suggest the perfect itineraries for your budget.</p>
+
+          <div class="tw-auth-pill-list">
+            <div class="tw-auth-pill">
+              <span class="tw-auth-dot"></span>
+              <span>AI-powered trip suggestions</span>
+            </div>
+            <div class="tw-auth-pill">
+              <span class="tw-auth-dot"></span>
+              <span>One-click re-booking &amp; history</span>
+            </div>
+            <div class="tw-auth-pill">
+              <span class="tw-auth-dot"></span>
+              <span>Track upcoming journeys in one place</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- RIGHT PANEL (forms) -->
+        <section class="tw-auth-main">
+          <div class="tw-auth-header">
+            <div class="tw-auth-title" id="tw-auth-title">Sign up to continue</div>
+            <button class="tw-auth-close" id="tw-auth-close" aria-label="Close">&times;</button>
+          </div>
+
+          <div class="tw-auth-tabs">
+            <button class="tw-auth-tab tw-active" id="tw-tab-signup">Sign up</button>
+            <button class="tw-auth-tab" id="tw-tab-login">Login</button>
+          </div>
+
+          <div class="tw-auth-body">
+            <!-- SIGNUP FORM -->
+            <form id="tw-auth-signup-form">
+              <label class="tw-auth-label" for="tw-su-name">Name</label>
+              <input class="tw-auth-input" id="tw-su-name" type="text" placeholder="Your name" required/>
+
+              <label class="tw-auth-label" for="tw-su-email">Email</label>
+              <input class="tw-auth-input" id="tw-su-email" type="email" placeholder="you@example.com" required/>
+
+              <label class="tw-auth-label" for="tw-su-password">Password</label>
+              <input class="tw-auth-input" id="tw-su-password" type="password" minlength="6" placeholder="••••••••" required/>
+
+              <label class="tw-auth-label" for="tw-su-confirm">Confirm password</label>
+              <input class="tw-auth-input" id="tw-su-confirm" type="password" minlength="6" placeholder="••••••••" required/>
+
+              <button type="submit" class="tw-auth-btn">Create account</button>
+            </form>
+
+            <!-- LOGIN FORM -->
+            <form id="tw-auth-login-form" style="display:none;">
+              <label class="tw-auth-label" for="tw-li-email">Email</label>
+              <input class="tw-auth-input" id="tw-li-email" type="email" placeholder="you@example.com" required/>
+
+              <label class="tw-auth-label" for="tw-li-password">Password</label>
+              <input class="tw-auth-input" id="tw-li-password" type="password" placeholder="••••••••" required/>
+
+              <button type="submit" class="tw-auth-btn">Login</button>
+            </form>
+
+            <div id="tw-auth-error" class="tw-auth-error"></div>
+            <p class="tw-auth-muted">
+              By continuing, you agree to our Terms &amp; Privacy Policy.
+            </p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard & modal logic (paths and variable names unchanged) -->
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TripAdvisor Agent | Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-elevated: #020617;
+      --card: #020617;
+      --card-soft: #020617;
+      --nav: #020617;
+      --border-subtle: #1e293b;
+      --accent: #2563eb;
+      --accent-soft: #1d4ed8;
+      --text-main: #e5e7eb;
+      --text-soft: #94a3b8;
+      --danger: #f97373;
+      --success: #22c55e;
+      --warning: #facc15;
+      --radius-xl: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Poppins", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #0b1120, #020617 55%);
+      min-height: 100vh;
+      color: var(--text-main);
+    }
+
+    .tw-agent-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 20px 32px;
+    }
+
+    /* ------- Top nav (same style as other agent pages) ------- */
+    .tw-agent-nav {
+      height: 60px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      margin-bottom: 28px;
+      backdrop-filter: blur(20px);
+    }
+
+    .tw-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .tw-logo-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9fafb;
+      color: #020617;
+      font-weight: 700;
+    }
+    .tw-logo-text {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .tw-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tw-nav-link {
+      border-radius: 999px;
+      padding: 8px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tw-nav-link:hover {
+      color: var(--text-main);
+      background: rgba(30, 64, 175, 0.25);
+    }
+    .tw-nav-link.tw-active {
+      background: var(--accent);
+      color: #f9fafb;
+      font-weight: 500;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.5),
+        0 12px 30px rgba(37, 99, 235, 0.4);
+    }
+
+    /* ------- Page hero ------- */
+    .tw-hero {
+      margin-top: 10px;
+      margin-bottom: 22px;
+    }
+    .tw-hero-title {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .tw-hero-sub {
+      font-size: 14px;
+      color: var(--text-soft);
+    }
+
+    /* ------- Profile card ------- */
+    .tw-card {
+      background: radial-gradient(circle at top left, #111827, #020617 60%);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      padding: 20px 22px 18px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
+    }
+
+    .tw-profile-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
+      gap: 18px;
+    }
+
+    .tw-section-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .tw-section-sub {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 16px;
+    }
+
+    .tw-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+    .tw-input,
+    .tw-textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      background: #020617;
+      color: #f9fafb;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+    .tw-input::placeholder,
+    .tw-textarea::placeholder {
+      color: #6b7280;
+    }
+    .tw-input:focus,
+    .tw-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.55),
+        0 0 0 6px rgba(37, 99, 235, 0.18);
+    }
+    .tw-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .tw-row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tw-badge-soft {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: rgba(15, 23, 42, 0.95);
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+    .tw-dot-success {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--success);
+    }
+
+    .tw-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .tw-toggle-row label {
+      font-size: 13px;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    .tw-toggle-row span {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .tw-btn-primary {
+      border-radius: 999px;
+      border: none;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.55);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+      margin-top: 4px;
+    }
+    .tw-btn-primary:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 18px 38px rgba(37, 99, 235, 0.6);
+    }
+    .tw-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 11px 24px rgba(37, 99, 235, 0.45);
+    }
+
+    .tw-profile-footer-note {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-top: 6px;
+    }
+
+    .tw-alert {
+      margin-top: 8px;
+      font-size: 12px;
+      display: none;
+    }
+    .tw-alert.show {
+      display: block;
+    }
+    .tw-alert.ok {
+      color: #4ade80;
+    }
+    .tw-alert.err {
+      color: #f97373;
+    }
+
+    /* progress */
+    .tw-progress-wrap {
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+    .tw-progress-label {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+    .tw-progress-bar {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+      border: 1px solid rgba(30, 64, 175, 0.7);
+    }
+    .tw-progress-inner {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(
+        90deg,
+        rgba(56, 189, 248, 1),
+        rgba(37, 99, 235, 1)
+      );
+      transition: width 0.25s ease;
+    }
+
+    .tw-footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-soft);
+      text-align: right;
+    }
+
+    /* small screens */
+    @media (max-width: 768px) {
+      .tw-agent-shell {
+        padding: 10px 12px 28px;
+      }
+      .tw-agent-nav {
+        border-radius: 14px;
+        padding: 0 10px;
+      }
+      .tw-logo-text {
+        display: none;
+      }
+      .tw-hero-title {
+        font-size: 22px;
+      }
+      .tw-profile-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="tw-agent-shell">
+    <!-- Top navigation (same style as other agent pages) -->
+    <header class="tw-agent-nav">
+      <div class="tw-nav-left">
+        <div class="tw-logo-circle">T</div>
+        <div class="tw-logo-text">TripAdvisor</div>
+      </div>
+      <nav class="tw-nav-right">
+        <button class="tw-nav-link" onclick="window.location.href='/agent/dashboard'">
+          Dashboard
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/trips'">
+          Trips
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/trips/new'">
+          Add Trip
+        </button>
+        <button class="tw-nav-link" onclick="window.location.href='/agent/bookings'">
+          Bookings
+        </button>
+        <button class="tw-nav-link tw-active">
+          Profile
+        </button>
+        <button class="tw-nav-link" id="tw-logout-btn">
+          Logout
+        </button>
+      </nav>
+    </header>
+
+    <!-- Page header -->
+    <section class="tw-hero">
+      <div class="tw-hero-title">Agent profile</div>
+      <div class="tw-hero-sub">
+        Keep your business details up to date. Customers see parts of this on trip cards and booking confirmations.
+      </div>
+    </section>
+
+    <!-- Profile card -->
+    <section class="tw-card">
+      <div class="tw-profile-grid">
+        <!-- LEFT: basic info -->
+        <div>
+          <div class="tw-section-title">Basic details</div>
+          <div class="tw-section-sub">
+            We’ll use this for bookings, invoices and agent identity on the platform.
+          </div>
+
+          <label class="tw-label" for="tw-profile-name">Full name</label>
+          <input id="tw-profile-name" class="tw-input" type="text" placeholder="Your name" />
+
+          <label class="tw-label" for="tw-profile-email">Email (login)</label>
+          <input id="tw-profile-email" class="tw-input" type="email" placeholder="you@example.com" disabled />
+
+          <div class="tw-row-2">
+            <div>
+              <label class="tw-label" for="tw-profile-phone">WhatsApp / phone</label>
+              <input id="tw-profile-phone" class="tw-input" type="tel" placeholder="+91 98765 43210" />
+            </div>
+            <div>
+              <label class="tw-label" for="tw-profile-city">Base city</label>
+              <input id="tw-profile-city" class="tw-input" type="text" placeholder="Jaipur, Goa, etc." />
+            </div>
+          </div>
+
+          <label class="tw-label" for="tw-profile-agency">Agency / brand name</label>
+          <input id="tw-profile-agency" class="tw-input" type="text" placeholder="TripAdvisor Holidays, XYZ Tours…" />
+
+          <label class="tw-label" for="tw-profile-bio">Short intro (shown to customers)</label>
+          <textarea
+            id="tw-profile-bio"
+            class="tw-textarea"
+            placeholder="Example: We are a boutique travel agency specialising in Goa, Himachal and Rajasthan journeys."
+          ></textarea>
+
+          <div class="tw-progress-wrap">
+            <div class="tw-progress-label">
+              Profile completeness: <span id="tw-profile-progress-label">0%</span>
+            </div>
+            <div class="tw-progress-bar">
+              <div id="tw-profile-progress-inner" class="tw-progress-inner"></div>
+            </div>
+          </div>
+
+          <button id="tw-profile-save" class="tw-btn-primary" type="button">
+            Save profile
+          </button>
+          <div id="tw-profile-alert" class="tw-alert"></div>
+        </div>
+
+        <!-- RIGHT: business settings -->
+        <div>
+          <div class="tw-section-title">Business settings</div>
+          <div class="tw-section-sub">
+            These settings affect how your trips appear and how bookings are handled.
+          </div>
+
+          <div class="tw-badge-soft">
+            <span class="tw-dot-success"></span>
+            Local-only settings &mdash; stored in this browser.
+          </div>
+
+          <div class="tw-toggle-row">
+            <input type="checkbox" id="tw-profile-instant" />
+            <label for="tw-profile-instant">Allow instant bookings</label>
+          </div>
+          <div class="tw-toggle-row">
+            <span>Customers can book without manual confirmation if this is on.</span>
+          </div>
+
+          <div class="tw-toggle-row">
+            <input type="checkbox" id="tw-profile-email-notify" />
+            <label for="tw-profile-email-notify">Email notifications for new bookings</label>
+          </div>
+          <div class="tw-toggle-row">
+            <span>We’ll send you an email whenever someone books your trip.</span>
+          </div>
+
+          <label class="tw-label" for="tw-profile-cancel">Cancellation policy</label>
+          <textarea
+            id="tw-profile-cancel"
+            class="tw-textarea"
+            placeholder="Example: 80% refund if cancelled 7 days before departure. 50% refund if cancelled 3–6 days before."
+          ></textarea>
+
+          <p class="tw-profile-footer-note">
+            Tip: having a clear, fair cancellation policy can improve customer trust and conversions.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="tw-footer">
+      TripAdvisor Agent · Profile & business settings
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const alertEl = document.getElementById("tw-profile-alert");
+      const nameEl = document.getElementById("tw-profile-name");
+      const emailEl = document.getElementById("tw-profile-email");
+      const phoneEl = document.getElementById("tw-profile-phone");
+      const cityEl = document.getElementById("tw-profile-city");
+      const agencyEl = document.getElementById("tw-profile-agency");
+      const bioEl = document.getElementById("tw-profile-bio");
+      const cancelEl = document.getElementById("tw-profile-cancel");
+      const instantEl = document.getElementById("tw-profile-instant");
+      const emailNotifyEl = document.getElementById("tw-profile-email-notify");
+      const saveBtn = document.getElementById("tw-profile-save");
+
+      const progressLabelEl = document.getElementById("tw-profile-progress-label");
+      const progressInnerEl = document.getElementById("tw-profile-progress-inner");
+
+      function showAlert(msg, ok) {
+        if (!alertEl) return;
+        alertEl.textContent = msg;
+        alertEl.classList.add("show");
+        alertEl.classList.toggle("ok", !!ok);
+        alertEl.classList.toggle("err", !ok);
+        // auto hide after some time
+        setTimeout(() => {
+          alertEl.classList.remove("show");
+        }, 2500);
+      }
+
+      // Ensure user is an authenticated agent
+      async function ensureAgentAndPrefill() {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (!res.ok) {
+            window.location.href = "/agent/login";
+            return;
+          }
+          const data = await res.json();
+          if (!data.ok || !data.user || data.user.role !== "agent") {
+            window.location.href = "/agent/login";
+            return;
+          }
+
+          // Prefill from auth info
+          if (nameEl && data.user.name) {
+            nameEl.value = data.user.name;
+          }
+          if (emailEl && data.user.email) {
+            emailEl.value = data.user.email;
+          }
+
+          // Load extra profile fields from localStorage
+          const stored = localStorage.getItem("twAgentProfileExtra");
+          if (stored) {
+            try {
+              const p = JSON.parse(stored);
+              if (phoneEl && p.phone) phoneEl.value = p.phone;
+              if (cityEl && p.city) cityEl.value = p.city;
+              if (agencyEl && p.agency) agencyEl.value = p.agency;
+              if (bioEl && p.bio) bioEl.value = p.bio;
+              if (cancelEl && p.cancellationPolicy) cancelEl.value = p.cancellationPolicy;
+              if (instantEl && typeof p.instantBooking === "boolean") {
+                instantEl.checked = p.instantBooking;
+              }
+              if (emailNotifyEl && typeof p.emailNotify === "boolean") {
+                emailNotifyEl.checked = p.emailNotify;
+              }
+            } catch (_) {}
+          }
+
+          updateProgress();
+        } catch (err) {
+          console.error(err);
+          window.location.href = "/agent/login";
+        }
+      }
+
+      function updateProgress() {
+        // Simple completeness metric based on filled fields
+        const fields = [
+          nameEl && nameEl.value.trim(),
+          emailEl && emailEl.value.trim(),
+          phoneEl && phoneEl.value.trim(),
+          cityEl && cityEl.value.trim(),
+          agencyEl && agencyEl.value.trim(),
+          bioEl && bioEl.value.trim(),
+          cancelEl && cancelEl.value.trim(),
+        ];
+        let completed = fields.filter(Boolean).length;
+
+        // Count toggles as +0.5 if checked
+        if (instantEl && instantEl.checked) completed += 0.5;
+        if (emailNotifyEl && emailNotifyEl.checked) completed += 0.5;
+
+        const total = fields.length + 1; // approximated denominator
+        const percent = Math.min(100, Math.round((completed / total) * 100));
+
+        if (progressLabelEl) progressLabelEl.textContent = percent + "%";
+        if (progressInnerEl) progressInnerEl.style.width = percent + "%";
+      }
+
+      if (nameEl) nameEl.addEventListener("input", updateProgress);
+      if (phoneEl) phoneEl.addEventListener("input", updateProgress);
+      if (cityEl) cityEl.addEventListener("input", updateProgress);
+      if (agencyEl) agencyEl.addEventListener("input", updateProgress);
+      if (bioEl) bioEl.addEventListener("input", updateProgress);
+      if (cancelEl) cancelEl.addEventListener("input", updateProgress);
+      if (instantEl) instantEl.addEventListener("change", updateProgress);
+      if (emailNotifyEl) emailNotifyEl.addEventListener("change", updateProgress);
+
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => {
+          const extra = {
+            phone: phoneEl ? phoneEl.value.trim() : "",
+            city: cityEl ? cityEl.value.trim() : "",
+            agency: agencyEl ? agencyEl.value.trim() : "",
+            bio: bioEl ? bioEl.value.trim() : "",
+            cancellationPolicy: cancelEl ? cancelEl.value.trim() : "",
+            instantBooking: instantEl ? !!instantEl.checked : false,
+            emailNotify: emailNotifyEl ? !!emailNotifyEl.checked : false,
+          };
+          try {
+            localStorage.setItem("twAgentProfileExtra", JSON.stringify(extra));
+            updateProgress();
+            showAlert("Profile saved on this device ✔", true);
+          } catch (err) {
+            console.error(err);
+            showAlert("Could not save profile locally", false);
+          }
+        });
+      }
+
+      // Logout
+      const logoutBtn = document.getElementById("tw-logout-btn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+          try {
+            await fetch("/api/auth/logout", { method: "POST" });
+          } catch (_) {}
+          window.location.href = "/agent/login";
+        });
+      }
+
+      // inits
+      (async function init() {
+        await ensureAgentAndPrefill();
+      })();
+    })();
+  </script>
+</body>
+</html>

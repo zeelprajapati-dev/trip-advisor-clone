@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Tripadvisor • Payment</title>
+
+  <!-- global base styles -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root {
+      --pay-bg: #020617;
+      --pay-card: #020617f2;
+      --pay-border: #1f2937;
+      --pay-muted: #9ca3af;
+      --pay-primary: #2563eb;
+      --pay-primary-dark: #1d4ed8;
+      --pay-success: #22c55e;
+    }
+
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Poppins",sans-serif;
+    }
+
+    .pay-wrap {
+      max-width: 1040px;
+      margin: 96px auto 40px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+      gap: 18px;
+    }
+
+    .pay-card {
+      background: linear-gradient(145deg, #020617f2, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 20px 22px 18px;
+    }
+
+    .pay-card h1 {
+      font-size: 22px;
+      margin: 0 0 6px;
+    }
+    .pay-sub {
+      font-size: 13px;
+      color: var(--pay-muted);
+      margin-bottom: 16px;
+    }
+
+    .pay-row {
+      display: grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 10px;
+    }
+
+    .pay-label {
+      display: block;
+      font-size: 12px;
+      color: var(--pay-muted);
+      margin-bottom: 4px;
+    }
+    .pay-input,
+    .pay-select {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1px solid var(--pay-border);
+      background: #020617;
+      color: #f9fafb;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .pay-input::placeholder {
+      color: #6b7280;
+    }
+    .pay-input:focus,
+    .pay-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(37,99,235,.55), 0 0 0 6px rgba(37,99,235,.18);
+    }
+
+    .pay-methods {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 8px;
+      margin: 6px 0 10px;
+    }
+
+    .pay-method-button {
+      border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.95);
+      padding: 8px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      transition: border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .pay-method-button span {
+      font-size: 11px;
+      color: var(--pay-muted);
+    }
+    .pay-method-button.pay-method-active {
+      border-color: var(--pay-primary);
+      background: rgba(37,99,235,0.2);
+      transform: translateY(-1px);
+    }
+
+    .pay-btn-primary {
+      width: 100%;
+      border-radius: 999px;
+      padding: 11px 14px;
+      margin-top: 8px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg,var(--pay-primary),var(--pay-primary-dark));
+      color: #f9fafb;
+      box-shadow: 0 16px 32px rgba(37,99,235,.55);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+    }
+    .pay-btn-primary:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 20px 40px rgba(37,99,235,.6);
+    }
+    .pay-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 11px 22px rgba(37,99,235,.45);
+    }
+
+    .pay-note {
+      font-size: 11px;
+      color: var(--pay-muted);
+      margin-top: 8px;
+    }
+
+    .pay-alert {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--pay-success);
+      display: none;
+    }
+    .pay-alert.show {
+      display: block;
+    }
+
+    /* summary */
+    .pay-summary {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 60%),
+                  #020617f2;
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      padding: 18px 18px 16px;
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    .pay-summary h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    .pay-summary-trip {
+      margin-bottom: 10px;
+    }
+    .pay-summary-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .pay-summary-sub {
+      font-size: 12px;
+      color: var(--pay-muted);
+    }
+
+    .pay-summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin: 4px 0;
+    }
+    .pay-summary-row span.muted {
+      color: var(--pay-muted);
+    }
+
+    .pay-summary-total {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(148,163,184,.35);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pay-summary-total-amount {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .pay-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.4);
+      background: rgba(15,23,42,0.9);
+      font-size: 11px;
+      color: var(--pay-muted);
+      margin-bottom: 6px;
+    }
+    .pay-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    @media (max-width: 900px) {
+      .pay-wrap {
+        grid-template-columns: minmax(0,1fr);
+        margin-top: 88px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- same nav look as other pages -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripAdvisor</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/ai-trips" class="link">AI Trips</a>
+        <a href="/profile" class="link">Profile</a>
+        <a href="/about" class="link">About</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pay-wrap">
+    <!-- LEFT: payment form -->
+    <section class="pay-card">
+      <h1>Secure payment</h1>
+      <p class="pay-sub">
+        Complete your payment to confirm the booking. You’ll receive your voucher and full itinerary by email and WhatsApp.
+      </p>
+
+      <form id="paymentForm">
+        <div class="pay-label">Choose payment method</div>
+        <div class="pay-methods">
+          <button type="button" class="pay-method-button pay-method-active" data-method="card">
+            <span>Card</span>
+            <span>Visa / MasterCard</span>
+          </button>
+          <button type="button" class="pay-method-button" data-method="upi">
+            <span>UPI</span>
+            <span>GPay / PhonePe</span>
+          </button>
+          <button type="button" class="pay-method-button" data-method="netbanking">
+            <span>Net banking</span>
+            <span>All major banks</span>
+          </button>
+        </div>
+
+        <!-- Card fields -->
+        <div id="pay-card-fields">
+          <label class="pay-label" for="pay-name">Name on card</label>
+          <input id="pay-name" class="pay-input" type="text" placeholder="As printed on card" required />
+
+          <label class="pay-label" for="pay-number">Card number</label>
+          <input id="pay-number" class="pay-input" type="text" maxlength="19" placeholder="XXXX XXXX XXXX XXXX" required />
+
+          <div class="pay-row">
+            <div>
+              <label class="pay-label" for="pay-expiry">Expiry</label>
+              <input id="pay-expiry" class="pay-input" type="text" placeholder="MM / YY" required />
+            </div>
+            <div>
+              <label class="pay-label" for="pay-cvv">CVV</label>
+              <input id="pay-cvv" class="pay-input" type="password" maxlength="4" placeholder="***" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- UPI / Netbanking simple placeholder -->
+        <div id="pay-upi-fields" style="display:none;">
+          <label class="pay-label" for="pay-upi-id">UPI ID</label>
+          <input id="pay-upi-id" class="pay-input" type="text" placeholder="yourname@bank" />
+        </div>
+
+        <div id="pay-net-fields" style="display:none;">
+          <label class="pay-label" for="pay-bank">Select bank</label>
+          <select id="pay-bank" class="pay-select">
+            <option value="">Choose bank</option>
+            <option>HDFC Bank</option>
+            <option>ICICI Bank</option>
+            <option>Axis Bank</option>
+            <option>SBI</option>
+            <option>Kotak Mahindra Bank</option>
+          </select>
+        </div>
+
+        <button type="submit" class="pay-btn-primary">Complete payment</button>
+        <p class="pay-note">
+          This is a demo payment screen — no real charge will be made. Your booking details are saved securely for this session.
+        </p>
+        <p id="pay-alert" class="pay-alert"></p>
+      </form>
+    </section>
+
+    <!-- RIGHT: dynamic order summary -->
+    <aside class="pay-summary">
+      <h2>Order summary</h2>
+
+      <div class="pay-tag">
+        <span class="pay-tag-dot"></span>
+        <span id="pay-status-tag">Booking draft ready</span>
+      </div>
+
+      <div class="pay-summary-trip">
+        <div class="pay-summary-title" id="pay-trip-title">Trip title</div>
+        <div class="pay-summary-sub" id="pay-trip-sub">Route • dates • travellers</div>
+      </div>
+
+      <div class="pay-summary-row">
+        <span class="muted">Trip ID</span>
+        <span id="pay-trip-id">—</span>
+      </div>
+      <div class="pay-summary-row">
+        <span class="muted">Approx. price / person / day</span>
+        <span id="pay-trip-price">—</span>
+      </div>
+      <div class="pay-summary-row">
+        <span class="muted">Travellers</span>
+        <span id="pay-trip-persons">—</span>
+      </div>
+      <div class="pay-summary-row">
+        <span class="muted">Duration</span>
+        <span id="pay-trip-days">—</span>
+      </div>
+      <div class="pay-summary-row">
+        <span class="muted">Start date</span>
+        <span id="pay-trip-start">—</span>
+      </div>
+      <div class="pay-summary-row">
+        <span class="muted">Room type</span>
+        <span id="pay-trip-room">—</span>
+      </div>
+
+      <div class="pay-summary-total">
+        <span>Total (estimated)</span>
+        <span class="pay-summary-total-amount" id="pay-trip-total">—</span>
+      </div>
+
+      <div class="pay-note" style="margin-top:6px;">
+        Any coupons or discounts can be applied on the final confirmation screen.
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+
+      const alertEl = $("pay-alert");
+      const statusTagEl = $("pay-status-tag");
+
+      const tripTitleEl   = $("pay-trip-title");
+      const tripSubEl     = $("pay-trip-sub");
+      const tripIdEl      = $("pay-trip-id");
+      const tripPriceEl   = $("pay-trip-price");
+      const tripPersonsEl = $("pay-trip-persons");
+      const tripDaysEl    = $("pay-trip-days");
+      const tripStartEl   = $("pay-trip-start");
+      const tripRoomEl    = $("pay-trip-room");
+      const tripTotalEl   = $("pay-trip-total");
+
+      const methodButtons = document.querySelectorAll(".pay-method-button");
+      const cardFields = $("pay-card-fields");
+      const upiFields  = $("pay-upi-fields");
+      const netFields  = $("pay-net-fields");
+
+      let booking = null;
+
+      function rupee(n) {
+        return new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(Number(n) || 0);
+      }
+
+      function loadBooking() {
+        try {
+          const raw = localStorage.getItem("twBookingDraft");
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (e) {
+          console.error("Failed to parse booking draft", e);
+          return null;
+        }
+      }
+
+      function renderSummary() {
+        if (!booking) {
+          statusTagEl.textContent = "No booking found";
+          tripTitleEl.textContent = "No trip selected";
+          tripSubEl.textContent = "Return to dashboard and choose a package to continue.";
+          return;
+        }
+
+        statusTagEl.textContent = "Booking draft ready";
+
+        const nights = booking.days || booking.durationDays || 0;
+        const routePart =
+          booking.src && booking.dst ? `${booking.src} → ${booking.dst}` : "";
+
+        tripTitleEl.textContent = booking.title || "Selected trip";
+        tripSubEl.textContent = [
+          routePart,
+          nights ? `${nights} night${nights > 1 ? "s" : ""}` : "",
+          booking.persons ? `${booking.persons} traveller${booking.persons > 1 ? "s" : ""}` : "",
+        ].filter(Boolean).join(" • ");
+
+        tripIdEl.textContent = booking.tripId || "—";
+        tripPriceEl.textContent = booking.pricePerPersonPerDay
+          ? rupee(booking.pricePerPersonPerDay)
+          : "—";
+
+        tripPersonsEl.textContent = booking.persons || "—";
+        tripDaysEl.textContent = nights
+          ? `${nights} night${nights > 1 ? "s" : ""}`
+          : "—";
+        tripStartEl.textContent = booking.startDate || "Flexible";
+        tripRoomEl.textContent =
+          booking.room === "suite"
+            ? "Suite"
+            : booking.room === "deluxe"
+            ? "Deluxe room"
+            : booking.room === "standard"
+            ? "Standard room"
+            : booking.room || "Standard room";
+
+        const total =
+          (booking.pricePerPersonPerDay || 0) *
+          (booking.persons || 0) *
+          (booking.days || booking.durationDays || 0);
+
+        tripTotalEl.textContent = total ? rupee(total) : "—";
+      }
+
+      function setMethod(method) {
+        methodButtons.forEach((btn) => {
+          const m = btn.getAttribute("data-method");
+          btn.classList.toggle("pay-method-active", m === method);
+        });
+
+        cardFields.style.display = method === "card" ? "" : "none";
+        upiFields.style.display  = method === "upi" ? "" : "none";
+        netFields.style.display  = method === "netbanking" ? "" : "none";
+      }
+
+      // ----- INIT -----
+      booking = loadBooking();
+      if (!booking) {
+        alert("No booking details found. Please select a trip and fill booking details again.");
+        window.location.href = "/";
+        return;
+      }
+
+      renderSummary();
+      setMethod("card");
+
+      methodButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const method = btn.getAttribute("data-method");
+          setMethod(method);
+        });
+      });
+
+      // ----- SUBMIT: create booking via API, then redirect -----
+      const form = document.getElementById("paymentForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (!booking || !booking.tripId) {
+          alert("Missing trip information. Please start the booking again.");
+          window.location.href = "/";
+          return;
+        }
+
+        alertEl.textContent = "Processing payment…";
+        alertEl.classList.add("show");
+
+        try {
+          const res = await fetch("/api/bookings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tripId: booking.tripId,
+              persons: booking.persons,
+              days: booking.days || booking.durationDays,
+              startDate: booking.startDate,
+              room: booking.room,
+              notes: booking.notes,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (!res.ok || !data.ok) {
+            throw new Error(data.error || "Failed to save booking");
+          }
+
+          // Save status + bookingId for later if needed
+          booking.status = "paid";
+          booking.bookingId = data.booking && data.booking._id;
+          localStorage.setItem("twBookingDraft", JSON.stringify(booking));
+
+          alertEl.textContent = "Payment successful! Your trip is confirmed 🎉";
+
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 1000);
+        } catch (err) {
+          console.error(err);
+          alertEl.textContent =
+            err.message || "Payment failed, please try again.";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

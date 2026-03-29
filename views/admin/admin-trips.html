@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TripWise • Admin Trips</title>
+
+  <!-- Same global as admin-login/admin-dashboard -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      /* identical palette to admin-dashboard / admin-login */
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.22), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 46%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    /* top nav (consistent) */
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    /* page shell */
+    .adm-shell{ max-width:1150px; margin:96px auto 40px; padding:0 20px 28px; }
+
+    /* header row */
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .adm-title{ font-size:26px; font-weight:700; letter-spacing:.2px; margin:0; }
+    .adm-sub{ font-size:14px; color:var(--muted); margin-top:4px; }
+
+    /* admin tabs */
+    .adm-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .adm-tab{
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      font-size:13px; font-weight:500;
+      padding:8px 12px; border-radius:999px;
+      text-decoration:none;
+      transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .adm-tab:hover{border-color:rgba(148,163,184,.9);background:#0b1220;transform:translateY(-1px)}
+    .adm-tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:transparent;}
+
+    /* buttons / inputs */
+    .logout{border:1px solid rgba(148,163,184,.5);background:transparent;color:#e5e7eb;padding:8px 14px;border-radius:999px;cursor:pointer}
+    .logout:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+
+    .btn{border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.45)}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#e5e7eb;border:1px solid rgba(148,163,184,.5)}
+    .btn-ghost:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+
+    .select, .input{
+      background:#0b1220;border:1px solid var(--border);color:#e5e7eb;
+      border-radius:12px;padding:8px 12px;font-size:13px;outline:none;
+    }
+    .input::placeholder{color:#6b7280}
+
+    /* cards */
+    .card{
+      background: linear-gradient(145deg,#030712,#0b1220);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 18px;
+    }
+    .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+    .card-title{font-size:16px;font-weight:600}
+    .card-sub{font-size:12px;color:var(--muted)}
+
+    /* table */
+    .table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--border);margin-top:10px}
+    table{width:100%;border-collapse:collapse;background:#0b1220}
+    thead tr{background:#0f172a}
+    th,td{font-size:13px;padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    th{color:#cbd5e1}
+    tbody tr:hover{background:#0e1526}
+
+    .pill{ display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;text-transform:capitalize }
+    .s-active{  background:rgba(34,197,94,.18); color:#4ade80; border:1px solid rgba(34,197,94,.35) }
+    .s-hidden{  background:rgba(239,68,68,.14); color:#f87171; border:1px solid rgba(239,68,68,.32) }
+
+    .badge{
+      font-size:11px;border:1px solid rgba(148,163,184,.45);
+      padding:4px 8px;border-radius:999px;color:#cbd5e1;background:#0b1220
+    }
+
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);
+      padding:10px 16px;border-radius:999px;background:rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);color:#e5e7eb;font-size:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.16s;z-index:40
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+
+    .controls{display:flex;flex-wrap:wrap;gap:8px}
+    .controls > *{min-height:38px}
+    .spacer{flex:1}
+    .pager{display:flex;align-items:center;gap:8px}
+    .page-pill{border:1px solid rgba(148,163,184,.45);border-radius:10px;padding:6px 10px;font-size:12px}
+
+    /* inline edit input */
+    .inline-edit{
+      width:110px;background:#071024;border:1px dashed rgba(148,163,184,.45);
+      color:#e5e7eb;border-radius:10px;padding:6px 8px;font-size:12px
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation (same as admin-login/dashboard) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="adm-shell">
+    <!-- Header -->
+    <section class="adm-head">
+      <div>
+        <h1 class="adm-title">Trips</h1>
+        <div class="adm-sub">Browse all trips, manage visibility, pricing, duplication and cleanup.</div>
+
+        <div class="adm-tabs">
+          <a class="adm-tab" href="/admin/admin-dashboard">Dashboard</a>
+          <a class="adm-tab" href="/admin/admin-agents">Agents</a>
+          <a class="adm-tab" href="/admin/admin-approvals">Approvals</a>
+          <a class="adm-tab" href="/admin/admin-customers">Customers</a>
+          <a class="adm-tab active" href="/admin/admin-trips">Trips</a>
+          <a class="adm-tab" href="/admin/admin-bookings">Bookings</a>
+          <a class="adm-tab" href="/admin/admin-payments">Payments</a>
+          <a class="adm-tab" href="/admin/admin-alerts">Alerts</a>
+        </div>
+      </div>
+
+      <button id="adm-logout-btn" class="logout">Logout</button>
+    </section>
+
+    <!-- Controls -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">Filters</div>
+        <div class="card-sub">Search, sort, status and export</div>
+      </div>
+      <div class="controls">
+        <input id="t-q" class="input" type="search" placeholder="Search title, src, dst, provider email…"/>
+        <select id="t-status" class="select">
+          <option value="">Any visibility</option>
+          <option value="visible">Visible</option>
+          <option value="hidden">Hidden</option>
+        </select>
+        <select id="t-sort" class="select">
+          <option value="-createdAt">Newest</option>
+          <option value="createdAt">Oldest</option>
+          <option value="-pricePerPersonPerDay">Highest price</option>
+          <option value="pricePerPersonPerDay">Lowest price</option>
+          <option value="-rating">Top rated</option>
+          <option value="rating">Lowest rated</option>
+          <option value="title">Title (A→Z)</option>
+          <option value="-title">Title (Z→A)</option>
+        </select>
+        <input id="t-provider" class="input" type="search" placeholder="Filter by provider id/email (optional)"/>
+        <button id="t-apply" class="btn btn-ghost">Apply</button>
+        <div class="spacer"></div>
+        <button id="t-export" class="btn btn-primary">Export CSV</button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card" style="margin-top:16px;">
+      <div class="card-head">
+        <div class="card-title">All trips</div>
+        <div id="t-sub" class="card-sub">—</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Trip</th>
+              <th>Route / Duration</th>
+              <th>Price / Rating</th>
+              <th>Provider</th>
+              <th>Visibility</th>
+              <th style="width:340px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="t-body">
+            <tr><td colspan="6" style="text-align:center;color:#94a3b8;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager" style="margin-top:10px;">
+        <button id="pg-prev" class="btn btn-ghost">Prev</button>
+        <span id="pg-info" class="page-pill">Page 1 / 1</span>
+        <button id="pg-next" class="btn btn-ghost">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="toast">Saved</div>
+
+  <script>
+    (function(){
+      const logoutBtn = document.getElementById("adm-logout-btn");
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", async ()=>{
+          try{ await fetch("/api/admin/logout", { method:"POST" }); }catch(_){}
+          window.location.href="/admin/login";
+        });
+      }
+
+      // Controls
+      const qEl        = document.getElementById("t-q");
+      const statusEl   = document.getElementById("t-status");
+      const sortEl     = document.getElementById("t-sort");
+      const providerEl = document.getElementById("t-provider");
+      const applyEl    = document.getElementById("t-apply");
+      const exportEl   = document.getElementById("t-export");
+
+      // Table / meta
+      const bodyEl = document.getElementById("t-body");
+      const subEl  = document.getElementById("t-sub");
+
+      // Pagination
+      const prevEl = document.getElementById("pg-prev");
+      const nextEl = document.getElementById("pg-next");
+      const infoEl = document.getElementById("pg-info");
+      let page = 1, limit = 10, totalPages = 1, totalCount = 0;
+
+      // Toast
+      const toast = document.getElementById("adm-toast");
+      function showToast(msg){
+        toast.textContent = msg || "Saved";
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"), 1400);
+      }
+
+      function rupee(n){
+        return new Intl.NumberFormat("en-IN", { style:"currency", currency:"INR", maximumFractionDigits:0 }).format(Number(n||0));
+      }
+      function fmtDate(x){
+        if(!x) return "—";
+        const d = new Date(x);
+        if(isNaN(d)) return "—";
+        return d.toLocaleString();
+      }
+      function qs(params){
+        const usp = new URLSearchParams();
+        Object.entries(params).forEach(([k,v])=>{
+          if(v !== undefined && v !== null && String(v).trim() !== "") usp.set(k, v);
+        });
+        return usp.toString() ? ("?" + usp.toString()) : "";
+      }
+
+      async function apiGet(url){
+        try{
+          const r = await fetch(url);
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiPatch(url, body){
+        try{
+          const r = await fetch(url, {
+            method:"PATCH",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify(body||{})
+          });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiPost(url, body){
+        try{
+          const r = await fetch(url, {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify(body||{})
+          });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiDelete(url){
+        try{
+          const r = await fetch(url, { method:"DELETE" });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+
+      function renderRows(trips){
+        if(!Array.isArray(trips) || trips.length === 0){
+          bodyEl.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No trips found</td></tr>';
+          return;
+        }
+        bodyEl.innerHTML = "";
+        trips.forEach(t=>{
+          const tr = document.createElement("tr");
+          tr.dataset.id = t._id;
+
+          const hidden = !!t.hidden;
+          const pillCls = hidden ? "s-hidden" : "s-active";
+
+          const price = t.pricePerPersonPerDay ?? 0;
+          const rating = (typeof t.rating === "number" ? t.rating.toFixed(1) : (t.rating || "—"));
+
+          tr.innerHTML = `
+            <td>
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                ${t.img ? `<img src="${t.img}" alt="" style="width:56px;height:40px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" />` : ``}
+                <div>
+                  <div><strong>${t.title || "Untitled trip"}</strong></div>
+                  <div style="font-size:12px;color:#94a3b8;">ID: ${t._id || "—"} · Created: ${fmtDate(t.createdAt)}</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-size:12px;">
+              <div>${(t.src || "—")} → ${(t.dst || "—")}</div>
+              <div style="color:#94a3b8;">${t.durationDays ?? "—"} day(s)</div>
+            </td>
+            <td>
+              <div>${rupee(price)} / day</div>
+              <div style="font-size:12px;color:#94a3b8;">★ ${rating}</div>
+            </td>
+            <td style="font-size:12px;">
+              <div>${t.providerName || "—"}</div>
+              <div style="color:#94a3b8;">${t.providerEmail || (t.provider ? ("#" + t.provider) : "—")}</div>
+            </td>
+            <td><span class="pill ${pillCls}">${hidden ? "hidden" : "visible"}</span></td>
+            <td>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <button class="btn btn-primary" data-action="toggle">${hidden ? "Unhide" : "Hide"}</button>
+                <button class="btn btn-ghost" data-action="duplicate">Duplicate</button>
+                <button class="btn btn-ghost" data-action="copyId">Copy ID</button>
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <input class="inline-edit" type="number" step="1" min="0" value="${price}" data-field="price" title="Price / person / day"/>
+                  <button class="btn btn-ghost" data-action="savePrice">Save</button>
+                </div>
+                <button class="btn btn-danger" data-action="delete">Delete</button>
+              </div>
+            </td>
+          `;
+
+          bodyEl.appendChild(tr);
+        });
+      }
+
+      async function loadTrips(){
+        const params = {
+          search: (qEl.value||"").trim(),
+          status: statusEl.value || "",
+          provider: (providerEl.value||"").trim(),
+          sort: sortEl.value || "",
+          page, limit
+        };
+        const data = await apiGet("/api/admin/trips" + qs(params));
+
+        if(!data.ok){
+          bodyEl.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align:center;color:#94a3b8;">
+                ${data.error || "Trips API unavailable"} — implement GET /api/admin/trips
+              </td>
+            </tr>`;
+          subEl.textContent = "—";
+          infoEl.textContent = "Page 1 / 1";
+          totalPages = 1; totalCount = 0;
+          return;
+        }
+
+        // Expected: { ok:true, trips:[...], page, totalPages, total }
+        renderRows(data.trips || []);
+        page = data.page || 1;
+        totalPages = data.totalPages || 1;
+        totalCount = data.total || (data.trips ? data.trips.length : 0);
+
+        subEl.textContent = `${totalCount} result${totalCount===1?"":"s"} • page ${page}/${totalPages}`;
+        infoEl.textContent = `Page ${page} / ${totalPages}`;
+      }
+
+      // Events
+      document.getElementById("t-apply").addEventListener("click", ()=>{ page=1; loadTrips(); });
+      qEl.addEventListener("keydown", e=>{ if(e.key==="Enter"){ page=1; loadTrips(); } });
+
+      prevEl.addEventListener("click", ()=>{ if(page>1){ page--; loadTrips(); } });
+      nextEl.addEventListener("click", ()=>{ if(page<totalPages){ page++; loadTrips(); } });
+
+      bodyEl.addEventListener("click", async (e)=>{
+        const btn = e.target.closest("button[data-action]");
+        if(!btn) return;
+
+        const row = btn.closest("tr");
+        const id  = row?.dataset.id;
+        if(!id) return;
+
+        const action = btn.dataset.action;
+
+        if(action === "copyId"){
+          try{ await navigator.clipboard.writeText(id); showToast("Trip ID copied"); }catch(_){ showToast("Copy failed"); }
+          return;
+        }
+
+        if(action === "toggle"){
+          // determine target hidden state from button label
+          const hidden = btn.textContent.trim().toLowerCase() === "hide";
+          // Actually "hide" means set hidden=true, "unhide" means hidden=false
+          const res = await apiPatch(`/api/admin/trips/${encodeURIComponent(id)}/visibility`, { hidden: hidden });
+          if(res.ok){ showToast(hidden ? "Trip hidden" : "Trip visible"); loadTrips(); }
+          else{ showToast(res.error || "Update failed"); }
+          return;
+        }
+
+        if(action === "duplicate"){
+          const res = await apiPost(`/api/admin/trips/${encodeURIComponent(id)}/duplicate`, {});
+          if(res.ok){ showToast("Trip duplicated"); loadTrips(); }
+          else{ showToast(res.error || "Duplicate failed"); }
+          return;
+        }
+
+        if(action === "savePrice"){
+          const inp = row.querySelector('input[data-field="price"]');
+          const price = Number(inp?.value||0);
+          if(Number.isNaN(price) || price < 0){ showToast("Invalid price"); return; }
+          const res = await apiPatch(`/api/admin/trips/${encodeURIComponent(id)}/price`, { pricePerPersonPerDay: price });
+          if(res.ok){ showToast("Price updated"); loadTrips(); }
+          else{ showToast(res.error || "Update failed"); }
+          return;
+        }
+
+        if(action === "delete"){
+          if(!confirm("Delete this trip permanently? This cannot be undone.")) return;
+          const res = await apiDelete(`/api/admin/trips/${encodeURIComponent(id)}`);
+          if(res.ok){ showToast("Trip deleted"); loadTrips(); }
+          else{ showToast(res.error || "Delete failed"); }
+          return;
+        }
+      });
+
+      // Export CSV
+      document.getElementById("t-export").addEventListener("click", async ()=>{
+        const params = {
+          search: (qEl.value||"").trim(),
+          status: statusEl.value || "",
+          provider: (providerEl.value||"").trim(),
+          sort: sortEl.value || "",
+          page: 1,
+          limit: 1000
+        };
+        const data = await apiGet("/api/admin/trips" + qs(params));
+        if(!data.ok || !Array.isArray(data.trips) || data.trips.length===0){
+          showToast("Nothing to export");
+          return;
+        }
+        const rows = [
+          ["TripID","Title","Src","Dst","DurationDays","PricePerPersonPerDay","Rating","Hidden","Provider","CreatedAt"]
+        ];
+        data.trips.forEach(t=>{
+          rows.push([
+            t._id || "",
+            t.title || "",
+            t.src || "",
+            t.dst || "",
+            String(t.durationDays ?? ""),
+            String(t.pricePerPersonPerDay ?? ""),
+            String(typeof t.rating === "number" ? t.rating.toFixed(1) : (t.rating || "")),
+            String(!!t.hidden),
+            t.providerEmail || t.provider || "",
+            t.createdAt ? new Date(t.createdAt).toISOString() : ""
+          ]);
+        });
+
+        const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `tripwise-trips-${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast("CSV exported");
+      });
+
+      // Initial load
+      loadTrips();
+    })();
+  </script>
+</body>
+</html>

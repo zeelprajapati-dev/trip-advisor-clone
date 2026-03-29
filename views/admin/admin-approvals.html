@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TripWise • Admin Approvals</title>
+
+  <!-- Same global as admin-login/admin-dashboard -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      /* identical palette to admin-dashboard */
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.22), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 46%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    .adm-shell{ max-width: 1150px; margin: 96px auto 40px; padding: 0 20px 28px; }
+
+    .adm-head{ display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px; }
+    .adm-title{ font-size:26px; font-weight:700; letter-spacing:.2px; margin:0; }
+    .adm-sub{ font-size:14px; color:var(--muted); margin-top:4px; }
+
+    .adm-tabs{ display:flex;flex-wrap:wrap;gap:8px;margin-top:12px }
+    .adm-tab{
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      font-size:13px;font-weight:500;
+      padding:8px 12px;border-radius:999px;
+      text-decoration:none;
+      transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .adm-tab:hover{border-color:rgba(148,163,184,.9);background:#0b1220;transform:translateY(-1px)}
+    .adm-tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:transparent;}
+
+    .logout{border:1px solid rgba(148,163,184,.5);background:transparent;color:#e5e7eb;padding:8px 14px;border-radius:999px;cursor:pointer}
+    .logout:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+
+    .card{
+      background: linear-gradient(145deg,#030712,#0b1220);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 18px;
+    }
+    .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+    .card-title{font-size:16px;font-weight:600}
+    .card-sub{font-size:12px;color:var(--muted)}
+
+    .list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+    .item{
+      border:1px solid var(--border);border-radius:14px;padding:12px;background:#0b1220;
+      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+      box-shadow: 0 10px 24px rgba(2,6,23,.6);
+    }
+    .item h4{margin:0 0 4px;font-size:14px}
+    .item p{margin:0;font-size:12px;color:var(--muted)}
+
+    .badge{
+      font-size:11px;border:1px solid rgba(148,163,184,.45);
+      padding:4px 8px;border-radius:999px;color:#cbd5e1;background:#0b1220
+    }
+
+    .btn{border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.45)}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#e5e7eb;border:1px solid rgba(148,163,184,.5)}
+    .btn-ghost:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+
+    .pill{ display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;text-transform:capitalize }
+    .s-pending{ background:rgba(245,158,11,.16); color:#fbbf24; border:1px solid rgba(245,158,11,.35) }
+    .s-active{  background:rgba(34,197,94,.18); color:#4ade80; border:1px solid rgba(34,197,94,.35) }
+    .s-suspended{background:rgba(239,68,68,.14); color:#f87171; border:1px solid rgba(239,68,68,.32) }
+
+    .filters{display:flex;gap:8px;flex-wrap:wrap}
+    .select{
+      background:#0b1220;border:1px solid var(--border);color:#e5e7eb;
+      border-radius:12px;padding:8px 10px;font-size:13px;outline:none;
+    }
+    .search{
+      background:#0b1220;border:1px solid var(--border);color:#e5e7eb;
+      border-radius:12px;padding:8px 12px;font-size:13px;outline:none;min-width:220px;
+    }
+
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);
+      padding:10px 16px;border-radius:999px;background:rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);color:#e5e7eb;font-size:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.16s;z-index:40
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+  </style>
+</head>
+<body>
+  <!-- Top Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="adm-shell">
+    <!-- Header -->
+    <section class="adm-head">
+      <div>
+        <h1 class="adm-title">Agent Approvals</h1>
+        <div class="adm-sub">Review and verify new agent applications. Approve or reject in one click.</div>
+
+        <div class="adm-tabs">
+          <a class="adm-tab" href="/admin/admin-dashboard">Dashboard</a>
+          <a class="adm-tab" href="/admin/admin-agents">Agents</a>
+          <a class="adm-tab active" href="/admin/admin-approvals">Approvals</a>
+          <a class="adm-tab" href="/admin/admin-customers">Customers</a>
+          <a class="adm-tab" href="/admin/admin-trips">Trips</a>
+          <a class="adm-tab" href="/admin/admin-bookings">Bookings</a>
+          <a class="adm-tab" href="/admin/admin-payments">Payments</a>
+          <a class="adm-tab" href="/admin/admin-alerts">Alerts</a>
+        </div>
+      </div>
+
+      <button id="adm-logout-btn" class="logout">Logout</button>
+    </section>
+
+    <!-- Controls -->
+    <section class="card" style="margin-bottom:16px;">
+      <div class="card-head">
+        <div class="card-title">Filters</div>
+        <div class="card-sub">Use quick filters to narrow pending applications</div>
+      </div>
+      <div class="filters">
+        <select id="f-kyc" class="select">
+          <option value="">KYC: Any</option>
+          <option value="submitted">KYC: Submitted</option>
+          <option value="verified">KYC: Verified</option>
+          <option value="not-submitted">KYC: Not submitted</option>
+        </select>
+
+        <select id="f-sort" class="select">
+          <option value="-createdAt">Newest first</option>
+          <option value="createdAt">Oldest first</option>
+          <option value="name">Name (A→Z)</option>
+          <option value="-name">Name (Z→A)</option>
+        </select>
+
+        <input id="f-q" class="search" type="search" placeholder="Search name, email, company…"/>
+        <button id="f-apply" class="btn btn-ghost">Apply</button>
+      </div>
+    </section>
+
+    <!-- Pending list -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">Pending agent approvals</div>
+        <div id="approvals-sub" class="card-sub">—</div>
+      </div>
+
+      <div id="approvals-list" class="list">
+        <div class="item">
+          <div>
+            <h4>Loading pending approvals…</h4>
+            <p>Agents awaiting verification appear here.</p>
+          </div>
+          <span class="badge">Fetching…</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="toast">Saved</div>
+
+  <script>
+    (function(){
+      const logoutBtn = document.getElementById("adm-logout-btn");
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", async ()=>{
+          try{ await fetch("/api/admin/logout", { method:"POST" }); }catch(_){}
+          window.location.href="/admin/login";
+        });
+      }
+
+      const listEl = document.getElementById("approvals-list");
+      const subEl  = document.getElementById("approvals-sub");
+      const toast  = document.getElementById("adm-toast");
+
+      const qEl    = document.getElementById("f-q");
+      const kycEl  = document.getElementById("f-kyc");
+      const sortEl = document.getElementById("f-sort");
+      const applyEl= document.getElementById("f-apply");
+
+      function showToast(msg){
+        toast.textContent = msg || "Saved";
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"), 1400);
+      }
+
+      function qs(params){
+        const usp = new URLSearchParams();
+        Object.entries(params).forEach(([k,v])=>{
+          if(v !== undefined && v !== null && String(v).trim() !== "") usp.set(k, v);
+        });
+        return usp.toString() ? ("?" + usp.toString()) : "";
+      }
+
+      async function apiGet(url){
+        try{
+          const r = await fetch(url);
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiPatch(url, body){
+        try{
+          const r = await fetch(url, {
+            method:"PATCH",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify(body||{})
+          });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+
+      function render(list){
+        if(!Array.isArray(list) || list.length === 0){
+          subEl.textContent = "No pending applications";
+          listEl.innerHTML = `
+            <div class="item">
+              <div>
+                <h4>No pending approvals 🎉</h4>
+                <p>New agent applications will appear here for review.</p>
+              </div>
+              <span class="badge">All clear</span>
+            </div>
+          `;
+          return;
+        }
+
+        subEl.textContent = list.length + " pending";
+        listEl.innerHTML = "";
+
+        list.forEach(a=>{
+          const kyc = a.kycStatus || "not-submitted";
+          const trips = a.tripsCount ?? 0;
+          const books = a.bookingsCount ?? 0;
+
+          const row = document.createElement("div");
+          row.className = "item";
+          row.dataset.agentId = a._id;
+
+          row.innerHTML = `
+            <div>
+              <h4>${a.name || "Unnamed agent"} <span class="pill s-pending">${(a.status || "pending")}</span></h4>
+              <p>
+                ${(a.company || a.agencyName) ? (a.company || a.agencyName) + " · " : ""}${a.email || "—"} ${(a.phone || a.contactNumber) ? "· " + (a.phone || a.contactNumber) : ""}
+              </p>
+              <p style="margin-top:6px;">
+                <span class="badge">KYC: ${kyc}</span>
+                <span class="badge">Trips: ${trips}</span>
+                <span class="badge">Bookings: ${books}</span>
+              </p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="btn btn-primary" data-action="approve">Approve</button>
+              <button class="btn btn-ghost" data-action="reject">Reject</button>
+            </div>
+          `;
+          listEl.appendChild(row);
+        });
+      }
+
+      async function load(){
+        const params = {
+          status: "pending",
+          q: (qEl.value||"").trim(),
+          kyc: kycEl.value || "",
+          sort: sortEl.value || ""
+        };
+        const data = await apiGet("/api/admin/agents" + qs(params));
+        if(!data.ok){
+          listEl.innerHTML = `
+            <div class="item">
+              <div>
+                <h4>Approvals API unavailable</h4>
+                <p>${data.error || "Endpoint not implemented"} — pending agents can’t be shown.</p>
+              </div>
+              <span class="badge">Check /api/admin/agents</span>
+            </div>`;
+          subEl.textContent = "—";
+          return;
+        }
+        render(data.agents || []);
+      }
+
+      listEl.addEventListener("click", async (e)=>{
+        const btn = e.target.closest("button[data-action]");
+        if(!btn) return;
+        const parent = btn.closest(".item");
+        const id = parent?.dataset.agentId;
+        if(!id) return;
+
+        const action = btn.dataset.action;
+        const status = action === "approve" ? "active" : "suspended";
+        const res = await apiPatch(`/api/admin/agents/${encodeURIComponent(id)}/status`, { status });
+        if(res.ok){
+          showToast("Agent updated");
+          load();
+        }else{
+          showToast("Failed to update agent");
+        }
+      });
+
+      applyEl.addEventListener("click", load);
+      qEl.addEventListener("keydown", e=>{ if(e.key==='Enter') load(); });
+
+      load(); // initial
+    })();
+  </script>
+</body>
+</html>

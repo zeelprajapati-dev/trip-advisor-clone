@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TripAdvisor • Your Profile</title>
+
+  <!-- Global styles (nav, base, etc.) -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root {
+      --up-bg: #020617;
+      --up-card: #020617f2;
+      --up-border: #1f2937;
+      --up-muted: #9ca3af;
+      --up-primary: #2563eb;
+      --up-primary-dark: #1d4ed8;
+      --up-success: #22c55e;
+    }
+
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Poppins",sans-serif;
+    }
+
+    /* make logout look like a nav pill */
+    .link.link-button {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 6px 14px;
+      background: transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font: inherit;
+      color: inherit;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .link.link-button:hover {
+      background: rgba(15,23,42,0.85);
+      border-color: rgba(148,163,184,0.9);
+      color: #e5e7eb;
+    }
+
+    /* highlight active nav link */
+    .link.active {
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    .up-shell {
+      max-width: 1100px;
+      margin: 96px auto 40px;
+      padding: 0 20px;
+    }
+
+    .up-header {
+      margin-bottom: 18px;
+    }
+    .up-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .up-sub {
+      font-size: 14px;
+      color: var(--up-muted);
+    }
+
+    .up-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr);
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .up-card {
+      background: linear-gradient(135deg, #020617f8, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 18px 18px 16px;
+    }
+
+    .up-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    .up-card-title {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .up-card-sub {
+      font-size: 13px;
+      color: var(--up-muted);
+      margin-top: 2px;
+    }
+
+    .up-profile-main {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .up-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top, #38bdf8, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 20px;
+    }
+    .up-name {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .up-email {
+      font-size: 13px;
+      color: var(--up-muted);
+    }
+
+    .up-meta-row {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--up-muted);
+      margin-bottom: 10px;
+    }
+
+    .up-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .up-stat {
+      padding: 8px 9px;
+      border-radius: 12px;
+      border: 1px solid rgba(31,41,55,.9);
+      background: radial-gradient(circle at top left, rgba(15,23,42,.96), #020617);
+      font-size: 12px;
+    }
+    .up-stat-label {
+      color: var(--up-muted);
+      margin-bottom: 2px;
+    }
+    .up-stat-value {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .up-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.4);
+      background: rgba(15,23,42,.9);
+      font-size: 11px;
+      color: var(--up-muted);
+      margin-top: 6px;
+    }
+    .up-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--up-success);
+    }
+
+    /* bookings table */
+    .up-table-wrap {
+      margin-top: 6px;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,.4);
+      overflow: hidden;
+    }
+    table.up-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 650px;
+    }
+    .up-table thead {
+      background: rgba(15,23,42,.98);
+    }
+    .up-table th,
+    .up-table td {
+      padding: 8px 10px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .up-table th {
+      color: var(--up-muted);
+      font-weight: 500;
+      border-bottom: 1px solid rgba(148,163,184,.4);
+    }
+    .up-table tbody tr:nth-child(even) {
+      background: rgba(15,23,42,.90);
+    }
+    .up-table tbody tr:nth-child(odd) {
+      background: rgba(15,23,42,.97);
+    }
+    .up-table tbody tr:hover {
+      background: rgba(37,99,235,.32);
+    }
+    .up-text-soft {
+      color: var(--up-muted);
+      font-size: 12px;
+    }
+
+    .up-badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      display: inline-block;
+    }
+    .up-badge-success {
+      background: rgba(22,163,74,0.18);
+      color: #4ade80;
+    }
+    .up-badge-warning {
+      background: rgba(234,179,8,0.2);
+      color: #facc15;
+    }
+    .up-badge-danger {
+      background: rgba(239,68,68,0.2);
+      color: #fecaca;
+    }
+
+    .up-empty {
+      padding: 20px 12px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--up-muted);
+    }
+
+    .up-footer-note {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--up-muted);
+    }
+
+    .up-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(15,23,42,.96);
+      border: 1px solid rgba(148,163,184,.6);
+      color: #e5e7eb;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,.6);
+      z-index: 40;
+    }
+    .up-toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+
+    @media (max-width: 900px) {
+      .up-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .up-shell {
+        margin-top: 88px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAV (consistent with other customer pages) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripAdvisor</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/ai-trips" class="link">AI Trips</a>
+        <a href="/about" class="link">About</a>
+        <a href="/pofile" class="link active">Profile</a>
+        <button id="nav-logout-btn" class="link link-button" type="button">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="up-shell">
+    <header class="up-header">
+      <div class="up-title">Your profile</div>
+      <div class="up-sub">
+        View your TripAdvisor details, see all your booked trips, and keep track of your travel history.
+      </div>
+    </header>
+
+    <section class="up-grid">
+      <!-- LEFT: Profile summary -->
+      <article class="up-card">
+        <div class="up-card-header">
+          <div>
+            <div class="up-card-title">Account overview</div>
+            <div class="up-card-sub">This information is private and only visible to you.</div>
+          </div>
+        </div>
+
+        <div class="up-profile-main">
+          <div class="up-avatar" id="up-avatar-initials">U</div>
+          <div>
+            <div class="up-name" id="up-name">User</div>
+            <div class="up-email" id="up-email">user@example.com</div>
+          </div>
+        </div>
+
+        <div class="up-meta-row">
+          <div>Joined: <span id="up-joined">—</span></div>
+          <div>|</div>
+          <div>Last login: <span id="up-last-login">—</span></div>
+        </div>
+
+        <div class="up-stats-grid">
+          <div class="up-stat">
+            <div class="up-stat-label">Total bookings</div>
+            <div class="up-stat-value" id="up-total-bookings">0</div>
+          </div>
+          <div class="up-stat">
+            <div class="up-stat-label">Trips completed</div>
+            <div class="up-stat-value" id="up-trips-completed">0</div>
+          </div>
+          <div class="up-stat">
+            <div class="up-stat-label">Total spent</div>
+            <div class="up-stat-value" id="up-total-spent">₹0</div>
+          </div>
+        </div>
+
+        <div class="up-tag">
+          <span class="up-tag-dot"></span>
+          <span id="up-tier-label">Traveller · Starter</span>
+        </div>
+      </article>
+
+      <!-- RIGHT: Bookings list -->
+      <article class="up-card">
+        <div class="up-card-header">
+          <div>
+            <div class="up-card-title">Your bookings</div>
+            <div class="up-card-sub" id="up-booking-sub">
+              See all trips you’ve booked with TripAdvisor.
+            </div>
+          </div>
+          <div class="up-text-soft">
+            <span id="up-booking-count">0</span> records
+          </div>
+        </div>
+
+        <div id="up-bookings-container">
+          <div class="up-table-wrap" id="up-bookings-table-wrap">
+            <!-- Table injected by JS -->
+          </div>
+        </div>
+
+        <div class="up-footer-note">
+          Need help with a booking? Reach us using the contact details on your confirmation email.
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="up-toast" class="up-toast">Logged out successfully.</div>
+
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+
+      const avatarEl       = $("up-avatar-initials");
+      const nameEl         = $("up-name");
+      const emailEl        = $("up-email");
+      const joinedEl       = $("up-joined");
+      const lastLoginEl    = $("up-last-login");
+      const tierLabelEl    = $("up-tier-label");
+
+      const totalBookingsEl   = $("up-total-bookings");
+      const tripsCompletedEl  = $("up-trips-completed");
+      const totalSpentEl      = $("up-total-spent");
+      const bookingCountEl    = $("up-booking-count");
+      const bookingSubEl      = $("up-booking-sub");
+      const tableWrapEl       = $("up-bookings-table-wrap");
+      const toastEl           = $("up-toast");
+
+      const logoutBtn   = $("nav-logout-btn");
+
+      function showToast(msg) {
+        if (!toastEl) return;
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        setTimeout(() => toastEl.classList.remove("show"), 1600);
+      }
+
+      function rupee(n) {
+        const num = Number(n) || 0;
+        return new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(num);
+      }
+
+      function formatDate(d) {
+        if (!d) return "—";
+        const dt = new Date(d);
+        if (isNaN(dt)) return "—";
+        return dt.toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+
+      function statusBadge(status) {
+        const s = (status || "").toLowerCase();
+        if (s === "confirmed" || s === "success" || s === "paid") {
+          return '<span class="up-badge up-badge-success">Confirmed</span>';
+        }
+        if (s === "cancelled") {
+          return '<span class="up-badge up-badge-danger">Cancelled</span>';
+        }
+        if (!s || s === "pending") {
+          return '<span class="up-badge up-badge-warning">Pending</span>';
+        }
+        return '<span class="up-badge up-badge-warning">' + status + "</span>";
+      }
+
+      // -------- logout handler (consistent id) --------
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+          try {
+            await fetch("/api/auth/logout", { method: "POST" });
+          } catch (e) {
+            console.error(e);
+          } finally {
+            showToast("Logged out successfully.");
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 900);
+          }
+        });
+      }
+
+      // -------- load user profile from /api/auth/me --------
+      async function loadProfile() {
+        try {
+          const res = await fetch("/api/auth/me");
+          if (!res.ok) {
+            window.location.href = "/";
+            return null;
+          }
+          const data = await res.json();
+          if (!data.ok || !data.user) {
+            window.location.href = "/";
+            return null;
+          }
+
+          const user = data.user;
+
+          const name = user.name || "Traveller";
+          const email = user.email || "unknown@example.com";
+          const initials = name
+            .split(" ")
+            .filter(Boolean)
+            .map((x) => x[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+
+          if (avatarEl) avatarEl.textContent = initials || "U";
+          if (nameEl) nameEl.textContent = name;
+          if (emailEl) emailEl.textContent = email;
+
+          if (joinedEl) joinedEl.textContent = formatDate(user.createdAt);
+          if (lastLoginEl)
+            lastLoginEl.textContent = user.lastLogin
+              ? formatDate(user.lastLogin)
+              : "—";
+
+          // simple tier label
+          if (tierLabelEl) tierLabelEl.textContent =
+            "Traveller · " + (user.tier || "Starter");
+
+          return user._id || user.id;
+        } catch (err) {
+          console.error("Error loading profile", err);
+          window.location.href = "/";
+          return null;
+        }
+      }
+
+      // -------- load bookings for this user --------
+      async function loadBookings() {
+        if (!tableWrapEl) return;
+
+        tableWrapEl.innerHTML =
+          '<div class="up-empty">Loading your bookings…</div>';
+
+        try {
+          // Adjust endpoint name here if your backend uses a different path:
+          const res = await fetch("/api/bookings/my");
+          if (!res.ok) {
+            tableWrapEl.innerHTML =
+              '<div class="up-empty">Could not load your bookings.</div>';
+            return;
+          }
+
+          const data = await res.json();
+          const bookings = data.bookings || data.items || [];
+
+          const count = bookings.length;
+          if (bookingCountEl) bookingCountEl.textContent = count;
+
+          if (!count) {
+            tableWrapEl.innerHTML =
+              '<div class="up-empty">No trips booked yet. Once you make a booking, it will appear here.</div>';
+            return;
+          }
+
+          // compute stats
+          const now = new Date();
+          let totalSpent = 0;
+          let completed = 0;
+
+          bookings.forEach((b) => {
+            totalSpent += Number(b.totalAmount || 0);
+            if (b.departureDate) {
+              const dep = new Date(b.departureDate);
+              if (!isNaN(dep) && dep < now) {
+                completed++;
+              }
+            }
+          });
+
+          if (totalBookingsEl) totalBookingsEl.textContent = count;
+          if (tripsCompletedEl) tripsCompletedEl.textContent = completed;
+          if (totalSpentEl) totalSpentEl.textContent = rupee(totalSpent);
+
+          if (bookingSubEl) {
+            bookingSubEl.textContent =
+              "You have " +
+              count +
+              " booking" +
+              (count === 1 ? "" : "s") +
+              " with TripAdvisor.";
+          }
+
+          const rowsHtml = bookings
+            .map((b) => {
+              const tripTitle = (b.tripTitle || b.trip?.title || "Trip").trim();
+              const route =
+                b.route ||
+                (b.trip?.src && b.trip?.dst
+                  ? `${b.trip.src} → ${b.trip.dst}`
+                  : "—");
+              const dep = formatDate(b.departureDate);
+              const persons = b.passengers || b.persons || 0;
+              const amount = rupee(b.totalAmount || 0);
+
+              return `
+                <tr>
+                  <td>
+                    ${tripTitle}
+                    <div class="up-text-soft">${route}</div>
+                  </td>
+                  <td>${dep}</td>
+                  <td>${persons}</td>
+                  <td>${amount}</td>
+                  <td>${statusBadge(b.status)}</td>
+                </tr>
+              `;
+            })
+            .join("");
+
+          tableWrapEl.innerHTML = `
+            <div style="overflow-x:auto;">
+              <table class="up-table">
+                <thead>
+                  <tr>
+                    <th>Trip</th>
+                    <th>Departure</th>
+                    <th>Persons</th>
+                    <th>Amount paid</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rowsHtml}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } catch (err) {
+          console.error("Error loading bookings", err);
+          tableWrapEl.innerHTML =
+            '<div class="up-empty">Unexpected error loading your bookings.</div>';
+        }
+      }
+
+      // -------- init --------
+      (async function init() {
+        await loadProfile();
+        await loadBookings();
+      })();
+    })();
+  </script>
+</body>
+</html>

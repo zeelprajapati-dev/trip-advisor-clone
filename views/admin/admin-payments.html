@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TripWise • Admin Payments</title>
+
+  <!-- Same global CSS as admin-login / admin-dashboard -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      /* identical palette to admin-login/admin-dashboard */
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.22), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 46%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    /* top nav (consistent) */
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    /* page shell */
+    .adm-shell{ max-width:1150px; margin:96px auto 40px; padding:0 20px 28px; }
+
+    /* header row */
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .adm-title{ font-size:26px; font-weight:700; letter-spacing:.2px; margin:0; }
+    .adm-sub{ font-size:14px; color:var(--muted); margin-top:4px; }
+
+    /* admin tabs (same style as dashboard) */
+    .adm-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .adm-tab{
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      font-size:13px; font-weight:500;
+      padding:8px 12px; border-radius:999px;
+      text-decoration:none;
+      transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .adm-tab:hover{border-color:rgba(148,163,184,.9);background:#0b1220;transform:translateY(-1px)}
+    .adm-tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:transparent;}
+
+    /* buttons / inputs */
+    .logout{border:1px solid rgba(148,163,184,.5);background:transparent;color:#e5e7eb;padding:8px 14px;border-radius:999px;cursor:pointer}
+    .logout:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+    .btn{border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.45)}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#e5e7eb;border:1px solid rgba(148,163,184,.5)}
+    .btn-ghost:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+
+    .select, .input{
+      background:#0b1220;border:1px solid var(--border);color:#e5e7eb;
+      border-radius:12px;padding:8px 12px;font-size:13px;outline:none;
+    }
+    .input::placeholder{color:#6b7280}
+
+    /* cards */
+    .card{
+      background: linear-gradient(145deg,#030712,#0b1220);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 18px;
+    }
+    .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+    .card-title{font-size:16px;font-weight:600}
+    .card-sub{font-size:12px;color:var(--muted)}
+
+    /* KPI row */
+    .kpis{
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0;
+    }
+    @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media (max-width:700px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .kpi{
+      background: radial-gradient(circle at top left, rgba(37,99,235,.06), transparent 50%), #0b1220;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow: 0 10px 26px rgba(2,6,23,.6);
+    }
+    .kpi-title{font-size:12px;color:var(--muted)}
+    .kpi-value{font-size:22px;font-weight:700;margin-top:4px}
+    .kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+    /* table */
+    .table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--border);margin-top:10px}
+    table{width:100%;border-collapse:collapse;background:#0b1220}
+    thead tr{background:#0f172a}
+    th,td{font-size:13px;padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    th{color:#cbd5e1}
+    tbody tr:hover{background:#0e1526}
+
+    /* statuses */
+    .pill{ display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;text-transform:capitalize }
+    .s-paid{background:rgba(34,197,94,.18);color:#4ade80;border:1px solid rgba(34,197,94,.35)}
+    .s-pending{background:rgba(245,158,11,.16);color:#fbbf24;border:1px solid rgba(245,158,11,.35)}
+    .s-failed{background:rgba(239,68,68,.14);color:#f87171;border:1px solid rgba(239,68,68,.32)}
+    .s-refunded{background:rgba(59,130,246,.16);color:#93c5fd;border:1px solid rgba(59,130,246,.35)}
+    .s-dispute{background:rgba(245,158,11,.16);color:#fbbf24;border:1px solid rgba(245,158,11,.35)}
+
+    .badge{
+      font-size:11px;border:1px solid rgba(148,163,184,.45);
+      padding:4px 8px;border-radius:999px;color:#cbd5e1;background:#0b1220
+    }
+
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);
+      padding:10px 16px;border-radius:999px;background:rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);color:#e5e7eb;font-size:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.16s;z-index:40
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+
+    .controls{display:flex;flex-wrap:wrap;gap:8px}
+    .controls > *{min-height:38px}
+    .spacer{flex:1}
+    .pager{display:flex;align-items:center;gap:8px}
+    .page-pill{border:1px solid rgba(148,163,184,.45);border-radius:10px;padding:6px 10px;font-size:12px}
+
+    .small{font-size:12px;color:#94a3b8}
+    .row-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  </style>
+</head>
+<body>
+  <!-- Top Navigation (same as admin-login/dashboard) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="adm-shell">
+    <!-- Header -->
+    <section class="adm-head">
+      <div>
+        <h1 class="adm-title">Payments</h1>
+        <div class="adm-sub">Track charges, payment status, disputes and refunds across the platform.</div>
+
+        <div class="adm-tabs">
+          <a class="adm-tab" href="/admin/admin-dashboard">Dashboard</a>
+          <a class="adm-tab" href="/admin/admin-agents">Agents</a>
+          <a class="adm-tab" href="/admin/admin-approvals">Approvals</a>
+          <a class="adm-tab" href="/admin/admin-customers">Customers</a>
+          <a class="adm-tab" href="/admin/admin-trips">Trips</a>
+          <a class="adm-tab" href="/admin/admin-bookings">Bookings</a>
+          <a class="adm-tab active" href="/admin/admin-payments">Payments</a>
+          <a class="adm-tab" href="/admin/admin-alerts">Alerts</a>
+        </div>
+      </div>
+
+      <button id="adm-logout-btn" class="logout">Logout</button>
+    </section>
+
+    <!-- KPI BAR -->
+    <section class="kpis" id="pay-kpis">
+      <article class="kpi">
+        <div class="kpi-title">Today volume (INR)</div>
+        <div id="p-kpi-today" class="kpi-value">--</div>
+        <div id="p-kpi-today-count" class="kpi-sub">Transactions: --</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Total volume (INR)</div>
+        <div id="p-kpi-total" class="kpi-value">--</div>
+        <div id="p-kpi-total-count" class="kpi-sub">Transactions: --</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Paid</div>
+        <div id="p-kpi-paid" class="kpi-value">--</div>
+        <div class="kpi-sub">Successful charges</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Failed</div>
+        <div id="p-kpi-failed" class="kpi-value">--</div>
+        <div class="kpi-sub">Attempts that failed</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Refunds pending</div>
+        <div id="p-kpi-refunds" class="kpi-value">--</div>
+        <div class="kpi-sub">Awaiting action</div>
+      </article>
+    </section>
+
+    <!-- Filters -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">Filters</div>
+        <div class="card-sub">Search, status, method, sort, and date range</div>
+      </div>
+      <div class="controls">
+        <input id="p-q" class="input" type="search" placeholder="Search customer, email, trip, receipt id…"/>
+        <select id="p-status" class="select">
+          <option value="">Any status</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Failed</option>
+          <option value="refunded">Refunded</option>
+          <option value="dispute">Dispute</option>
+        </select>
+        <select id="p-method" class="select">
+          <option value="">Any method</option>
+          <option value="card">Card</option>
+          <option value="upi">UPI</option>
+          <option value="netbanking">NetBanking</option>
+          <option value="wallet">Wallet</option>
+          <option value="cod">Cash</option>
+        </select>
+        <select id="p-sort" class="select">
+          <option value="-createdAt">Newest</option>
+          <option value="createdAt">Oldest</option>
+          <option value="-amount">Highest Amount</option>
+          <option value="amount">Lowest Amount</option>
+        </select>
+        <input id="p-from" class="input" type="date" title="From"/>
+        <input id="p-to" class="input" type="date" title="To"/>
+        <button id="p-apply" class="btn btn-ghost">Apply</button>
+        <div class="spacer"></div>
+        <button id="p-export" class="btn btn-primary">Export CSV</button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card" style="margin-top:16px;">
+      <div class="card-head">
+        <div class="card-title">Payments ledger</div>
+        <div id="p-sub" class="card-sub">—</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Trip / Route</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Payment Status</th>
+              <th>Receipt / Txn</th>
+              <th style="width:380px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="p-body">
+            <tr><td colspan="7" style="text-align:center;color:#94a3b8;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager" style="margin-top:10px;">
+        <button id="pg-prev" class="btn btn-ghost">Prev</button>
+        <span id="pg-info" class="page-pill">Page 1 / 1</span>
+        <button id="pg-next" class="btn btn-ghost">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="toast">Saved</div>
+
+  <script>
+    (function(){
+      const logoutBtn = document.getElementById("adm-logout-btn");
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", async ()=>{
+          try{ await fetch("/api/admin/logout", { method:"POST" }); }catch(_){}
+          window.location.href="/admin/login";
+        });
+      }
+
+      // KPI elements
+      const kToday  = document.getElementById("p-kpi-today");
+      const kTodayC = document.getElementById("p-kpi-today-count");
+      const kTotal  = document.getElementById("p-kpi-total");
+      const kTotalC = document.getElementById("p-kpi-total-count");
+      const kPaid   = document.getElementById("p-kpi-paid");
+      const kFailed = document.getElementById("p-kpi-failed");
+      const kRefund = document.getElementById("p-kpi-refunds");
+
+      // Filters
+      const qEl     = document.getElementById("p-q");
+      const statusEl= document.getElementById("p-status");
+      const methodEl= document.getElementById("p-method");
+      const sortEl  = document.getElementById("p-sort");
+      const fromEl  = document.getElementById("p-from");
+      const toEl    = document.getElementById("p-to");
+      const applyEl = document.getElementById("p-apply");
+      const exportEl= document.getElementById("p-export");
+
+      // Table
+      const bodyEl = document.getElementById("p-body");
+      const subEl  = document.getElementById("p-sub");
+
+      // Pager
+      const prevEl = document.getElementById("pg-prev");
+      const nextEl = document.getElementById("pg-next");
+      const infoEl = document.getElementById("pg-info");
+      let page=1, limit=10, totalPages=1, totalCount=0;
+
+      // Toast
+      const toast=document.getElementById("adm-toast");
+      function showToast(msg){
+        toast.textContent = msg || "Saved";
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"), 1400);
+      }
+
+      function rupee(n){
+        return new Intl.NumberFormat("en-IN", { style:"currency", currency:"INR", maximumFractionDigits:0 }).format(Number(n||0));
+      }
+      function fmtDate(x){
+        if(!x) return "—";
+        const d = new Date(x);
+        if(isNaN(d)) return "—";
+        return d.toLocaleString();
+      }
+      function qs(params){
+        const usp = new URLSearchParams();
+        Object.entries(params).forEach(([k,v])=>{
+          if(v !== undefined && v !== null && String(v).trim() !== "") usp.set(k, v);
+        });
+        return usp.toString() ? ("?" + usp.toString()) : "";
+      }
+
+      async function apiGet(url){
+        try{ const r = await fetch(url); return await r.json(); }
+        catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiPatch(url, body){
+        try{
+          const r = await fetch(url, { method:"PATCH", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body||{}) });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiPost(url, body){
+        try{
+          const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body||{}) });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+
+      function pillFor(status){
+        const s = (status||"").toLowerCase();
+        let cls = "s-pending";
+        if(s==="paid") cls="s-paid";
+        else if(s==="failed") cls="s-failed";
+        else if(s==="refunded") cls="s-refunded";
+        else if(s==="dispute") cls="s-dispute";
+        return `<span class="pill ${cls}">${status || "pending"}</span>`;
+      }
+
+      async function loadSummary(){
+        const data = await apiGet("/api/admin/payments/summary");
+        if(!data.ok || !data.summary){
+          kToday.textContent = "--"; kTodayC.textContent = "Transactions: --";
+          kTotal.textContent = "--"; kTotalC.textContent = "Transactions: --";
+          kPaid.textContent = "--"; kFailed.textContent="--"; kRefund.textContent="--";
+          return;
+        }
+        const s = data.summary;
+        kToday.textContent  = rupee(s.todayAmount || 0);
+        kTodayC.textContent = "Transactions: " + (s.todayCount ?? 0);
+        kTotal.textContent  = rupee(s.totalAmount || 0);
+        kTotalC.textContent = "Transactions: " + (s.totalCount ?? 0);
+        kPaid.textContent   = s.paidCount ?? 0;
+        kFailed.textContent = s.failedCount ?? 0;
+        kRefund.textContent = s.refundsPending ?? 0;
+      }
+
+      function renderRows(list){
+        if(!Array.isArray(list) || list.length===0){
+          bodyEl.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No payments found</td></tr>';
+          return;
+        }
+        bodyEl.innerHTML = "";
+        list.forEach(p=>{
+          const tr = document.createElement("tr");
+          tr.dataset.id = p._id;
+          tr.innerHTML = `
+            <td>
+              <div><strong>${p.customerName || p.customer || "Unknown"}</strong></div>
+              <div class="small">${p.customerEmail || "—"}</div>
+              <div class="small">Created: ${fmtDate(p.createdAt)}</div>
+            </td>
+            <td class="small">
+              <div>${p.tripTitle || "—"}</div>
+              <div>${p.route || ((p.src||"") && (p.dst||"") ? (p.src+" → "+p.dst) : "")}</div>
+            </td>
+            <td>
+              <div>${rupee(p.amount || p.totalAmount || 0)}</div>
+              <div class="small">${p.currency || "INR"}</div>
+            </td>
+            <td>
+              <div>${(p.method || "—").toUpperCase()}</div>
+              <div class="small">${p.cardBrand ? (p.cardBrand + " •••• " + (p.cardLast4 || "")) : ""}</div>
+            </td>
+            <td>${pillFor(p.paymentStatus)}</td>
+            <td class="small">
+              <div>Receipt: ${p.receiptId || p.txnId || "—"}</div>
+              <div>Gateway: ${p.gateway || "—"}</div>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn btn-primary" data-action="markPaid">Mark Paid</button>
+                <button class="btn btn-ghost" data-action="markPending">Mark Pending</button>
+                <button class="btn btn-ghost" data-action="markFailed">Mark Failed</button>
+                <button class="btn btn-ghost" data-action="refund">Refund</button>
+                <button class="btn btn-ghost" data-action="dispute">Mark Dispute</button>
+                ${p.receiptUrl ? `<a class="btn btn-ghost" target="_blank" rel="noopener" href="${p.receiptUrl}">View Receipt</a>` : ""}
+              </div>
+            </td>
+          `;
+          bodyEl.appendChild(tr);
+        });
+      }
+
+      async function loadPayments(){
+        const params = {
+          search : (qEl.value||"").trim(),
+          status : statusEl.value || "",
+          method : methodEl.value || "",
+          sort   : sortEl.value || "",
+          dateFrom: fromEl.value || "",
+          dateTo  : toEl.value || "",
+          page, limit
+        };
+        const data = await apiGet("/api/admin/payments" + qs(params));
+        if(!data.ok){
+          bodyEl.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align:center;color:#94a3b8;">
+                ${data.error || "Payments API unavailable"} — implement GET /api/admin/payments
+              </td>
+            </tr>`;
+          subEl.textContent = "—";
+          infoEl.textContent = "Page 1 / 1";
+          totalPages = 1; totalCount = 0;
+          return;
+        }
+        renderRows(data.payments || []);
+        page = data.page || 1;
+        totalPages = data.totalPages || 1;
+        totalCount = data.total || (data.payments ? data.payments.length : 0);
+
+        subEl.textContent = `${totalCount} result${totalCount===1?"":"s"} • page ${page}/${totalPages}`;
+        infoEl.textContent = `Page ${page} / ${totalPages}`;
+      }
+
+      // Row action handlers
+      document.getElementById("p-body").addEventListener("click", async (e)=>{
+        const btn = e.target.closest("button[data-action]");
+        if(!btn) return;
+        const row = btn.closest("tr");
+        const id  = row?.dataset.id;
+        if(!id) return;
+
+        const action = btn.dataset.action;
+
+        if(action==="markPaid" || action==="markPending" || action==="markFailed" || action==="dispute"){
+          const map = { markPaid:"paid", markPending:"pending", markFailed:"failed", dispute:"dispute" };
+          const paymentStatus = map[action];
+          const res = await apiPatch(`/api/admin/payments/${encodeURIComponent(id)}/status`, { paymentStatus });
+          if(res.ok){ showToast("Payment updated"); loadSummary(); loadPayments(); }
+          else{ showToast(res.error || "Update failed"); }
+          return;
+        }
+
+        if(action==="refund"){
+          const amount = prompt("Enter refund amount (leave blank for full):", "");
+          const body = {};
+          if(amount && !isNaN(Number(amount))) body.amount = Number(amount);
+          const res = await apiPost(`/api/admin/payments/${encodeURIComponent(id)}/refund`, { action:"approve", ...body });
+          if(res.ok){ showToast("Refund processed"); loadSummary(); loadPayments(); }
+          else{ showToast(res.error || "Refund failed"); }
+          return;
+        }
+      });
+
+      // Filters & search
+      document.getElementById("p-apply").addEventListener("click", ()=>{ page=1; loadPayments(); });
+      qEl.addEventListener("keydown", e=>{ if(e.key==="Enter"){ page=1; loadPayments(); } });
+
+      // Pagination
+      prevEl.addEventListener("click", ()=>{ if(page>1){ page--; loadPayments(); } });
+      nextEl.addEventListener("click", ()=>{ if(page<totalPages){ page++; loadPayments(); } });
+
+      // Export CSV
+      document.getElementById("p-export").addEventListener("click", async ()=>{
+        const params = {
+          search : (qEl.value||"").trim(),
+          status : statusEl.value || "",
+          method : methodEl.value || "",
+          sort   : sortEl.value || "",
+          dateFrom: fromEl.value || "",
+          dateTo  : toEl.value || "",
+          page: 1,
+          limit: 1000
+        };
+        const data = await apiGet("/api/admin/payments" + qs(params));
+        if(!data.ok || !Array.isArray(data.payments) || data.payments.length===0){
+          showToast("Nothing to export");
+          return;
+        }
+        const rows = [
+          ["PaymentID","CustomerName","CustomerEmail","TripTitle","Route","Amount","Currency","Method","PaymentStatus","ReceiptId","TxnId","Gateway","CreatedAt"]
+        ];
+        data.payments.forEach(p=>{
+          rows.push([
+            p._id || "",
+            p.customerName || p.customer || "",
+            p.customerEmail || "",
+            p.tripTitle || "",
+            p.route || ((p.src||"") && (p.dst||"") ? (p.src+" → "+p.dst) : ""),
+            String(p.amount ?? p.totalAmount ?? 0),
+            p.currency || "INR",
+            p.method || "",
+            p.paymentStatus || "",
+            p.receiptId || "",
+            p.txnId || "",
+            p.gateway || "",
+            p.createdAt ? new Date(p.createdAt).toISOString() : ""
+          ]);
+        });
+        const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `tripwise-payments-${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast("CSV exported");
+      });
+
+      // Initial load
+      loadSummary();
+      loadPayments();
+    })();
+  </script>
+</body>
+</html>

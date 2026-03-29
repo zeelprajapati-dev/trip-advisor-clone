@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TripAdvisor • About</title>
+
+  <!-- global styles (nav, fonts, base colors) -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root {
+      --tw-bg: #020617;
+      --tw-card: #020617f2;
+      --tw-border: #1f2937;
+      --tw-muted: #9ca3af;
+      --tw-primary: #2563eb;
+      --tw-primary-dark: #1d4ed8;
+      --tw-accent-soft: rgba(37,99,235,.16);
+      --tw-success: #22c55e;
+    }
+
+    body {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 55%),
+                  #020617;
+      color: #e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Poppins",sans-serif;
+    }
+
+    /* highlight active nav link – matches other pages */
+    .link.active {
+      color: #60a5fa;
+      font-weight: 600;
+    }
+
+    /* --------- ABOUT LAYOUT --------- */
+    .about-shell {
+      max-width: 1100px;
+      margin: 96px auto 40px;
+      padding: 0 20px;
+    }
+
+    .about-hero {
+      margin-bottom: 26px;
+    }
+    .about-kicker {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    .about-title {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .about-sub {
+      font-size: 14px;
+      color: var(--tw-muted);
+      max-width: 640px;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .about-card {
+      background: linear-gradient(135deg, #020617f8, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+      padding: 18px 18px 16px;
+    }
+
+    .about-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .about-card-title {
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .about-pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.4);
+      background: rgba(15,23,42,.9);
+      color: var(--tw-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .about-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--tw-success);
+    }
+    .about-body {
+      font-size: 13px;
+      color: var(--tw-muted);
+      line-height: 1.6;
+    }
+
+    .about-body strong {
+      color: #e5e7eb;
+    }
+
+    .about-list {
+      margin-top: 10px;
+      padding-left: 18px;
+    }
+    .about-list li {
+      margin-bottom: 4px;
+    }
+
+    /* stats strip */
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .about-stat-card {
+      background: radial-gradient(circle at top, rgba(37,99,235,.18), transparent 60%),
+                  #020617f2;
+      border-radius: 16px;
+      border: 1px solid rgba(15,23,42,.9);
+      padding: 14px 14px 12px;
+    }
+    .about-stat-label {
+      font-size: 11px;
+      color: var(--tw-muted);
+      margin-bottom: 4px;
+    }
+    .about-stat-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .about-stat-hint {
+      font-size: 11px;
+      color: var(--tw-muted);
+      margin-top: 4px;
+    }
+
+    /* bottom split */
+    .about-bottom {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .about-cta-card {
+      background: linear-gradient(135deg, #020617f8, #020617e6);
+      border-radius: 20px;
+      border: 1px solid rgba(15,23,42,.9);
+      padding: 18px 18px 16px;
+      box-shadow: 0 20px 50px rgba(15,23,42,.9);
+    }
+    .about-cta-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .about-cta-text {
+      font-size: 13px;
+      color: var(--tw-muted);
+      margin-bottom: 12px;
+    }
+
+    .about-btn-primary {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      background: linear-gradient(135deg,var(--tw-primary),var(--tw-primary-dark));
+      color: #f9fafb;
+      cursor: pointer;
+      box-shadow: 0 12px 26px rgba(37,99,235,.55);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+      white-space: nowrap;
+    }
+    .about-btn-primary:hover {
+      filter: brightness(1.04);
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(37,99,235,.6);
+    }
+    .about-btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 20px rgba(37,99,235,.45);
+    }
+
+    .about-note {
+      font-size: 11px;
+      color: var(--tw-muted);
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .about-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .about-stats {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .about-bottom {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .about-title {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- main nav – identical structure to dashboard / AI Trips -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripAdvisor</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/ai-trips" class="link">AI Trips</a>
+        <a href="/about" class="link active">About</a>
+        <a href="/profile" class="link">Profile</a>
+        <a href="#" id="nav-logout-btn" class="link">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="about-shell">
+    <!-- HERO -->
+    <section class="about-hero">
+      <div class="about-kicker">BUSINESS TRIP ADVISOR</div>
+      <div class="about-title">About TripAdvisor Business Trip Advisor</div>
+      <p class="about-sub">
+        TripAdvisor helps busy teams, founders and travel agents turn messy travel plans into clean,
+        book-ready itineraries. We blend human-style planning with AI so every business trip feels
+        thoughtful, efficient and on-budget.
+      </p>
+    </section>
+
+    <!-- TOP GRID -->
+    <section class="about-grid">
+      <!-- LEFT: what it is -->
+      <article class="about-card">
+        <header class="about-card-header">
+          <div class="about-card-title">Built for modern business travel</div>
+          <div class="about-pill">
+            <span class="about-dot"></span>
+            Live + AI planning
+          </div>
+        </header>
+        <div class="about-body">
+          <p>
+            <strong>TripAdvisor Business Trip Advisor</strong> is your always-on trip planner. Share where
+            your team is travelling from, your meeting schedule and budget — we return curated packages
+            with:
+          </p>
+          <ul class="about-list">
+            <li>Optimised flights, stays and local transport.</li>
+            <li>Day-wise agendas with buffers for traffic and meetings.</li>
+            <li>Suggested restaurants and work-friendly cafés.</li>
+            <li>Optional add-ons like airport transfers and local experiences.</li>
+          </ul>
+          <p>
+            Everything is designed so you can move from idea to book-ready itinerary in minutes,
+            not weeks of back-and-forth.
+          </p>
+        </div>
+      </article>
+
+      <!-- RIGHT: who it helps -->
+      <article class="about-card">
+        <header class="about-card-header">
+          <div class="about-card-title">Who is it for?</div>
+          <div class="about-pill">From solo founders to large teams</div>
+        </header>
+        <div class="about-body">
+          <ul class="about-list">
+            <li><strong>Travel agents</strong> who need a fast way to design repeatable, high-quality packages for clients.</li>
+            <li><strong>Sales & partnership teams</strong> hopping between cities for demos, pitches and roadshows.</li>
+            <li><strong>Founders & CXOs</strong> who want a single view of where their team is staying and what it costs.</li>
+            <li><strong>HR & admin teams</strong> tasked with keeping travel budgets predictable and compliant.</li>
+          </ul>
+          <p style="margin-top:6px;">
+            Use TripAdvisor as your planning <strong>copilot</strong> — you stay in control, we handle the
+            structure, maths and logistics.
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <!-- STATS STRIP -->
+    <section class="about-stats">
+      <div class="about-stat-card">
+        <div class="about-stat-label">Planned with TripAdvisor</div>
+        <div class="about-stat-value">10,000+ nights</div>
+        <div class="about-stat-hint">Across business, leisure and mixed trips.</div>
+      </div>
+      <div class="about-stat-card">
+        <div class="about-stat-label">Average time saved</div>
+        <div class="about-stat-value">3–5 hrs / trip</div>
+        <div class="about-stat-hint">No more tab-overload or scattered WhatsApp threads.</div>
+      </div>
+      <div class="about-stat-card">
+        <div class="about-stat-label">Smart budget control</div>
+        <div class="about-stat-value">Up to 18%</div>
+        <div class="about-stat-hint">Typical savings vs. unmanaged travel spending.</div>
+      </div>
+    </section>
+
+    <!-- BOTTOM CARDS -->
+    <section class="about-bottom">
+      <article class="about-cta-card">
+        <div class="about-cta-title">How Business TripAdvisor works</div>
+        <p class="about-cta-text">
+          1. Start from the dashboard and share your origin cities, destination and rough dates.  
+          2. Use <strong>AI Trips</strong> to co-design a day-wise plan with our TripAdvisor AI.  
+          3. Pick or tweak a package, then confirm using the booking flow you already know.
+        </p>
+        <p class="about-cta-text">
+          Every package you book becomes part of your private library, so agents and admins can re-use
+          what works and improve it over time.
+        </p>
+      </article>
+
+      <article class="about-cta-card">
+        <div class="about-cta-title">Ready to plan your next business trip?</div>
+        <p class="about-cta-text">
+          Head back to the dashboard to explore curated routes, or open AI Trips to chat with your
+          planning assistant. You can start with something simple like:
+        </p>
+        <p class="about-cta-text" style="font-style:italic;">
+          “3-day client visit in Bengaluru from Mumbai for 4 people, mid-range hotels near Whitefield.”
+        </p>
+        <button type="button" class="about-btn-primary" onclick="window.location.href='/'">
+          Open dashboard
+        </button>
+        <p class="about-note">
+          Have feedback or a feature request for Business Trip Advisor? Drop it into your next AI chat
+          message — we read everything.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    // Logout behaviour – same as AI Trips page
+    (function () {
+      const logoutLink = document.getElementById("nav-logout-btn");
+      if (!logoutLink) return;
+
+      logoutLink.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+          const res = await fetch("/api/auth/logout", { method: "POST" });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || "Logout failed");
+
+          logoutLink.textContent = "Logging out...";
+          logoutLink.style.pointerEvents = "none";
+
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 1000);
+        } catch (err) {
+          console.error(err);
+          alert("Logout failed. Try again.");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>TripWise • Admin • Agents</title>
+
+  <!-- Use the same global stylesheet as admin-login & dashboard -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      /* identical palette to admin-login & admin-dashboard */
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.22), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 46%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    /* top nav keeps identical “active” style */
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    /* page shell */
+    .shell{max-width:1150px;margin:96px auto 40px;padding:0 20px 28px}
+
+    /* header + tabs */
+    .head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .title{font-size:26px;font-weight:700;margin:0;letter-spacing:.2px}
+    .sub{font-size:14px;color:var(--muted);margin-top:4px}
+    .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .tab{
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      font-size:13px;font-weight:500;
+      padding:8px 12px;border-radius:999px;text-decoration:none;
+      transition:border-color .15s, background .15s, transform .1s;
+    }
+    .tab:hover{border-color:rgba(148,163,184,.9);background:#0b1220;transform:translateY(-1px)}
+    .tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:transparent;}
+
+    /* toolbar */
+    .toolbar{
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:14px 0 16px
+    }
+    .searchbox{
+      display:flex;align-items:center;gap:8px;
+      background:#0b1220;border:1px solid var(--border);border-radius:12px;padding:8px 12px;min-width:260px;
+    }
+    .searchbox input{
+      background:transparent;border:none;outline:none;color:#e5e7eb;font-size:14px;width:220px;
+    }
+    .filters{display:flex;gap:8px}
+    .chip{
+      border:1px solid rgba(148,163,184,.45);background:rgba(15,23,42,.9);color:#e5e7eb;
+      padding:6px 12px;border-radius:999px;font-size:12px;cursor:pointer;transition:.12s;
+    }
+    .chip:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+    .chip.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-color:transparent}
+
+    /* layout grid */
+    .grid{display:grid;grid-template-columns: 1.55fr 1fr;gap:16px}
+    @media (max-width:1100px){.grid{grid-template-columns:1fr}}
+
+    /* cards */
+    .card{
+      background: linear-gradient(145deg,#030712,#0b1220);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 16px;
+    }
+    .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+    .card-title{font-size:16px;font-weight:600}
+    .card-sub{font-size:12px;color:var(--muted)}
+
+    /* table (dark) */
+    .table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;background:#0b1220}
+    thead tr{background:#0f172a}
+    th,td{font-size:13px;padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    th{color:#cbd5e1}
+    tbody tr:hover{background:#0e1526}
+
+    /* status pill */
+    .status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;text-transform:capitalize}
+    .s-active{background:rgba(34,197,94,.18);color:#4ade80;border:1px solid rgba(34,197,94,.35)}
+    .s-pending{background:rgba(245,158,11,.16);color:#fbbf24;border:1px solid rgba(245,158,11,.35)}
+    .s-suspended{background:rgba(239,68,68,.14);color:#f87171;border:1px solid rgba(239,68,68,.32)}
+
+    /* badges & small elements */
+    .badge{font-size:11px;border:1px solid rgba(148,163,184,.45);padding:4px 8px;border-radius:999px;color:#cbd5e1;background:#0b1220}
+
+    /* buttons */
+    .btn{border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.45)}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#e5e7eb;border:1px solid rgba(148,163,184,.5)}
+    .btn-ghost:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+
+    /* side panel content items */
+    .flexcol{display:flex;flex-direction:column;gap:8px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .kv{display:flex;justify-content:space-between;gap:14px}
+    .kv span{font-size:13px}
+    .muted{color:var(--muted);font-size:12px}
+
+    /* toast */
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);
+      padding:10px 16px;border-radius:999px;background:rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);color:#e5e7eb;font-size:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.16s;z-index:40
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+
+    .logout{border:1px solid rgba(148,163,184,.5);background:transparent;color:#e5e7eb;padding:8px 14px;border-radius:999px;cursor:pointer}
+    .logout:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+  </style>
+</head>
+<body>
+  <!-- Top Navigation (same component) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/ai-trips" class="link">AI Trips</a>
+        <a href="/about" class="link">About</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="shell">
+    <section class="head">
+      <div>
+        <h1 class="title">Agents</h1>
+        <div class="sub">Approve, manage and monitor agent performance. Suspend or activate accounts and review activity.</div>
+        <div class="tabs">
+          <a class="tab" href="/admin/admin-dashboard">Dashboard</a>
+          <a class="tab active" href="/admin/admin-agents">Agents</a>
+          <a class="tab" href="/admin/admin-approvals">Approvals</a>
+          <a class="tab" href="/admin/admin-customers">Customers</a>
+          <a class="tab" href="/admin/admin-trips">Trips</a>
+          <a class="tab" href="/admin/admin-bookings">Bookings</a>
+          <a class="tab" href="/admin/admin-payments">Payments</a>
+          <a class="tab" href="/admin/admin-alerts">Alerts</a>
+        </div>
+      </div>
+      <button id="adm-logout-btn" class="logout">Logout</button>
+    </section>
+
+    <!-- toolbar -->
+    <section class="toolbar">
+      <div class="searchbox">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#94a3b8" aria-hidden="true"><path d="M21 21l-4.3-4.3m1.3-5.2a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <input id="adm-agents-search" placeholder="Search agents by name, email or company"/>
+      </div>
+      <div class="filters">
+        <button class="chip active" data-status="all">All</button>
+        <button class="chip" data-status="pending">Pending</button>
+        <button class="chip" data-status="active">Active</button>
+        <button class="chip" data-status="suspended">Suspended</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <!-- left: agents table -->
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">Agent list</div>
+          <div class="card-sub"><span id="adm-agents-count">—</span> total</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Company</th>
+              <th>Contact</th>
+              <th>Stats</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="adm-agents-body">
+            <tr><td colspan="6" style="text-align:center;color:#94a3b8;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- right: agent details panel -->
+      <aside class="card">
+        <div class="card-head">
+          <div class="card-title">Agent details</div>
+          <div class="card-sub" id="adm-agent-side-sub">Select any agent to view profile</div>
+        </div>
+
+        <div id="adm-agent-side" class="flexcol">
+          <div class="muted">Tip: click any row in the table to preview here.</div>
+          <div style="height:6px"></div>
+          <div class="row">
+            <span class="badge">KYC: —</span>
+            <span class="badge">Trips: —</span>
+            <span class="badge">Bookings: —</span>
+            <span class="badge">Conversion: —</span>
+          </div>
+          <div style="height:6px"></div>
+          <div class="kv"><span class="muted">Name</span> <span id="adm-side-name">—</span></div>
+          <div class="kv"><span class="muted">Company</span> <span id="adm-side-company">—</span></div>
+          <div class="kv"><span class="muted">Email</span> <span id="adm-side-email">—</span></div>
+          <div class="kv"><span class="muted">Phone</span> <span id="adm-side-phone">—</span></div>
+          <div class="kv"><span class="muted">Status</span> <span id="adm-side-status">—</span></div>
+          <div class="kv"><span class="muted">Joined</span> <span id="adm-side-joined">—</span></div>
+
+          <div style="height:8px"></div>
+          <div class="row">
+            <button id="adm-side-activate" class="btn btn-primary">Activate</button>
+            <button id="adm-side-suspend" class="btn btn-ghost">Suspend</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="toast">Saved</div>
+
+  <script>
+    (function(){
+      const toast = document.getElementById("adm-toast");
+      const logoutBtn = document.getElementById("adm-logout-btn");
+
+      const bodyEl = document.getElementById("adm-agents-body");
+      const countEl = document.getElementById("adm-agents-count");
+      const searchEl = document.getElementById("adm-agents-search");
+      const filterChips = Array.from(document.querySelectorAll(".chip[data-status]"));
+
+      // side panel elements
+      const sideTitle = document.getElementById("adm-agent-side-sub");
+      const side = {
+        name:   document.getElementById("adm-side-name"),
+        company:document.getElementById("adm-side-company"),
+        email:  document.getElementById("adm-side-email"),
+        phone:  document.getElementById("adm-side-phone"),
+        status: document.getElementById("adm-side-status"),
+        joined: document.getElementById("adm-side-joined"),
+        activateBtn: document.getElementById("adm-side-activate"),
+        suspendBtn:  document.getElementById("adm-side-suspend"),
+      };
+      let selectedAgentId = null;
+      let currentStatus = "all";
+      let currentSearch = "";
+
+      function showToast(msg){
+        if(!toast) return;
+        toast.textContent = msg || "Saved";
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"), 1500);
+      }
+
+      async function apiGet(url){
+        try{
+          const res = await fetch(url);
+          if(!res.ok) throw new Error("HTTP "+res.status);
+          return await res.json();
+        }catch(err){ return { ok:false, error: err.message }; }
+      }
+      async function apiPatch(url, body){
+        try{
+          const res = await fetch(url, {
+            method:"PATCH",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify(body||{})
+          });
+          return await res.json();
+        }catch(err){ return { ok:false, error: err.message }; }
+      }
+
+      function pill(status){
+        const norm = (status||"").toLowerCase();
+        const cls = norm==="active" ? "s-active" : norm==="suspended" ? "s-suspended" : "s-pending";
+        return `<span class="status ${cls}">${norm || "pending"}</span>`;
+      }
+      function safe(x){ return (x===0?0:(x||"—")); }
+      function fmtDate(x){
+        if(!x) return "—"; const d=new Date(x); return isNaN(d)?"—":d.toLocaleDateString()+" "+d.toLocaleTimeString();
+      }
+
+      async function loadAgents(){
+        const q = new URLSearchParams();
+        if(currentStatus && currentStatus!=="all") q.set("status", currentStatus);
+        if(currentSearch) q.set("search", currentSearch.trim());
+        const data = await apiGet("/api/admin/agents" + (q.toString()?("?" + q.toString()):""));
+
+        if(!data.ok){
+          bodyEl.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#94a3b8;">${data.error || "Failed to load agents"}</td></tr>`;
+          countEl.textContent = "—";
+          return;
+        }
+
+        const list = Array.isArray(data.agents) ? data.agents : [];
+        countEl.textContent = list.length;
+
+        if(!list.length){
+          bodyEl.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No agents found</td></tr>`;
+          return;
+        }
+
+        bodyEl.innerHTML = "";
+        list.forEach(a=>{
+          const tr = document.createElement("tr");
+          tr.dataset.id = a._id;
+
+          const bookings = a.bookingsCount ?? a.metrics?.bookings ?? 0;
+          const trips = a.tripsCount ?? a.metrics?.trips ?? 0;
+          const conv = a.metrics?.conversionPct != null ? a.metrics.conversionPct : (a.conversionPct ?? null);
+          const kycs = a.kycStatus || "not-submitted";
+
+          tr.innerHTML = `
+            <td>
+              <div><strong>${safe(a.name)}</strong></div>
+              <div class="muted">${safe(a.email)}</div>
+            </td>
+            <td>${safe(a.company || a.agencyName)}</td>
+            <td>
+              <div>${safe(a.phone || a.contactNumber)}</div>
+              <div class="muted">KYC: ${kycs}</div>
+            </td>
+            <td>
+              <span class="badge">Trips: ${trips}</span>
+              <span class="badge">Bookings: ${bookings}</span>
+              <span class="badge">Conv: ${conv!=null? (conv+"%") : "—"}</span>
+            </td>
+            <td>${pill(a.status || (a.isApproved===false?"pending":"active"))}</td>
+            <td>
+              ${ (a.status==="active")
+                ? `<button class="btn btn-ghost" data-action="suspend">Suspend</button>`
+                : `<button class="btn btn-primary" data-action="activate">Activate</button>` }
+            </td>
+          `;
+          bodyEl.appendChild(tr);
+        });
+      }
+
+      async function loadSide(agentId){
+        selectedAgentId = agentId;
+        sideTitle.textContent = "Loading…";
+
+        // Optional endpoint: GET /api/admin/agents/:id
+        const data = await apiGet(`/api/admin/agents/${encodeURIComponent(agentId)}`);
+        if(!data.ok || !data.agent){
+          sideTitle.textContent = "Details unavailable";
+          side.name.textContent = "—";
+          side.company.textContent = "—";
+          side.email.textContent = "—";
+          side.phone.textContent = "—";
+          side.status.textContent = "—";
+          side.joined.textContent = "—";
+          return;
+        }
+
+        const a = data.agent;
+        sideTitle.textContent = a.name || "Agent";
+        side.name.textContent = a.name || "—";
+        side.company.textContent = a.company || a.agencyName || "—";
+        side.email.textContent = a.email || "—";
+        side.phone.textContent = a.phone || a.contactNumber || "—";
+        side.status.textContent = (a.status || (a.isApproved===false?"pending":"active"));
+        side.joined.textContent = fmtDate(a.createdAt);
+
+        // wire side action buttons
+        side.activateBtn.onclick = async ()=>{
+          const res = await apiPatch(`/api/admin/agents/${encodeURIComponent(agentId)}/status`,{status:"active"});
+          if(res.ok){ showToast("Agent activated"); await loadAgents(); await loadSide(agentId); }
+          else showToast("Update failed");
+        };
+        side.suspendBtn.onclick = async ()=>{
+          const res = await apiPatch(`/api/admin/agents/${encodeURIComponent(agentId)}/status`,{status:"suspended"});
+          if(res.ok){ showToast("Agent suspended"); await loadAgents(); await loadSide(agentId); }
+          else showToast("Update failed");
+        };
+      }
+
+      // table click handler (row select or action buttons)
+      bodyEl?.addEventListener("click", async (e)=>{
+        const btn = e.target.closest("button[data-action]");
+        const row = e.target.closest("tr[data-id]");
+        if(!row) return;
+
+        const id = row.dataset.id;
+
+        if(btn){
+          const act = btn.dataset.action;
+          const status = act === "activate" ? "active" : "suspended";
+          const res = await apiPatch(`/api/admin/agents/${encodeURIComponent(id)}/status`, { status });
+          if(res.ok){ showToast("Agent updated"); await loadAgents(); if(id===selectedAgentId) await loadSide(id); }
+          else showToast(res.error || "Action failed");
+          return;
+        }
+
+        // non-button click → load side panel
+        await loadSide(id);
+      });
+
+      // logout
+      logoutBtn?.addEventListener("click", async ()=>{
+        try{ await fetch("/api/admin/logout", { method:"POST" }); }catch(_){}
+        window.location.href = "/admin/login";
+      });
+
+      // filters
+      filterChips.forEach(ch=>{
+        ch.addEventListener("click", ()=>{
+          filterChips.forEach(x=>x.classList.remove("active"));
+          ch.classList.add("active");
+          currentStatus = ch.dataset.status || "all";
+          loadAgents();
+        });
+      });
+
+      // search
+      let searchTimer = null;
+      searchEl?.addEventListener("input", ()=>{
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(()=>{
+          currentSearch = searchEl.value || "";
+          loadAgents();
+        }, 250);
+      });
+
+      // initial load
+      loadAgents();
+    })();
+  </script>
+</body>
+</html>

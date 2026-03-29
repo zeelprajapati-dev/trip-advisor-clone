@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TripWise • Admin Login</title>
+
+  <!-- Reuse global styles -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.25), transparent 35%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 45%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    /* top nav (consistent with the app) */
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    .auth-wrap{
+      max-width: 980px;
+      margin: 96px auto 40px;
+      padding: 0 20px;
+      display:grid;
+      grid-template-columns: minmax(0,1.2fr) minmax(0,1fr);
+      gap:24px;
+      align-items: stretch;
+    }
+
+    .card{
+      background: linear-gradient(145deg,#020617f2,#020617e6);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 22px 22px 18px;
+    }
+
+    .hero-card{
+      background:
+        radial-gradient(circle at top, rgba(37,99,235,.15), transparent 55%),
+        linear-gradient(145deg,#030712,#0b1220);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .hero-title{
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing:.2px;
+    }
+    .hero-sub{
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .badge{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      border:1px solid rgba(148,163,184,.45);
+      background: rgba(15,23,42,.9);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color:#e5e7eb;
+      width: fit-content;
+    }
+    .dot{width:7px;height:7px;border-radius:999px;background:var(--good);}
+
+    .form-title{font-size:22px;margin:0 0 6px;}
+    .form-sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
+
+    .label{display:block;font-size:12px;color:var(--muted);margin:8px 0 6px;}
+    .input{
+      width:100%;
+      padding:11px 12px;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background:#020617;
+      color:#f9fafb;
+      font-size:14px;
+      outline:none;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .input::placeholder{color:#6b7280;}
+    .input:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 1px rgba(37,99,235,.55), 0 0 0 6px rgba(37,99,235,.18);
+    }
+
+    .btn-primary{
+      width:100%;
+      margin-top:12px;
+      border:none;
+      border-radius: 999px;
+      padding: 11px 16px;
+      background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+      color:#f9fafb;
+      font-weight:600;
+      font-size: 15px;
+      cursor:pointer;
+      box-shadow: 0 18px 36px rgba(37,99,235,.55);
+      transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+    }
+    .btn-primary:hover{filter:brightness(1.04); transform:translateY(-1px); box-shadow:0 22px 44px rgba(37,99,235,.6);}
+    .btn-primary:active{transform:translateY(0); box-shadow:0 12px 24px rgba(37,99,235,.45);}
+
+    .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;}
+    .hint{font-size:12px;color:var(--muted);}
+    .err{font-size:12px;color:#fca5a5;margin-top:8px;min-height:16px;}
+
+    .prefill{
+      margin-top:10px;
+      font-size:12px;
+      color:#a5b4fc;
+      display:flex;align-items:center;gap:8px;
+    }
+    .prefill code{
+      background:#0b1220;border:1px solid rgba(148,163,184,.4);
+      padding:2px 6px;border-radius:6px;color:#e5e7eb;
+    }
+
+    .foot-links{margin-top:14px;display:flex;justify-content:space-between;gap:10px;}
+    .ghost{
+      border-radius:999px;border:1px solid rgba(148,163,184,.5);
+      padding:8px 14px;background:transparent;color:#e5e7eb;
+      font-size:13px;cursor:pointer;
+      transition:border-color .15s ease, background .15s ease;
+    }
+    .ghost:hover{border-color:rgba(148,163,184,.9); background:rgba(15,23,42,.9);}
+
+    .toast{
+      position: fixed; left:50%; bottom:26px; transform: translateX(-50%);
+      background: rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);
+      color:#e5e7eb; padding:10px 16px; border-radius:999px;
+      font-size:12px; box-shadow:0 12px 36px rgba(0,0,0,.55);
+      opacity:0; pointer-events:none; transition: opacity .18s ease, transform .18s ease;
+      z-index: 40;
+    }
+    .toast.show{opacity:1; transform: translate(-50%, 0); pointer-events:auto;}
+
+    @media (max-width: 900px){
+      .auth-wrap{grid-template-columns: minmax(0,1fr);}
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation (kept consistent) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/ai-trips" class="link">AI Trips</a>
+        <a href="/about" class="link">About</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="auth-wrap">
+    <!-- Left: brand/hero -->
+    <section class="card hero-card">
+      <div>
+        <div class="badge"><span class="dot"></span> Admin Console</div>
+        <h1 class="hero-title" style="margin:10px 0 8px;">Welcome back, Admin</h1>
+        <p class="hero-sub">
+          Sign in with your issued credentials to access TripWise platform controls.
+          Manage agents, customers, bookings, trips, revenue analytics and approvals —
+          all from one place.
+        </p>
+      </div>
+      <div class="hero-sub" style="font-size:12px;">
+        Need help? Contact the platform owner to rotate credentials or add a backup admin.
+      </div>
+    </section>
+
+    <!-- Right: login form -->
+    <section class="card">
+      <h2 class="form-title">Admin Login</h2>
+      <p class="form-sub">Use the credentials provided to you. No signup required.</p>
+
+      <form id="admin-login-form" novalidate>
+        <label class="label" for="admin-email">Email</label>
+        <input id="admin-email" class="input" type="email" autocomplete="username"
+               placeholder="admin@tripwise.com" value="admin@tripwise.com" required/>
+
+        <label class="label" for="admin-password">Password</label>
+        <input id="admin-password" class="input" type="password" autocomplete="current-password"
+               placeholder="••••••••" value="admin123" required/>
+
+        <div class="row">
+          <div class="hint">You can change these defaults in <code>.env</code> or server config.</div>
+        </div>
+
+        <button id="admin-login-btn" type="submit" class="btn-primary">Login</button>
+        <div id="admin-login-error" class="err"></div>
+
+        <div class="prefill">
+          Quick login → <code>admin@tripwise.com</code> / <code>admin123</code>
+        </div>
+
+        <div class="foot-links">
+          <a href="/" class="ghost" style="text-decoration:none; text-align:center;">Back to Site</a>
+          <button id="admin-forgot-btn" type="button" class="ghost">Forgot password?</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="admin-toast" class="toast">Logged in. Redirecting…</div>
+
+  <script>
+    (function(){
+      const form = document.getElementById("admin-login-form");
+      const emailEl = document.getElementById("admin-email");
+      const passEl  = document.getElementById("admin-password");
+      const errEl   = document.getElementById("admin-login-error");
+      const toast   = document.getElementById("admin-toast");
+      const forgot  = document.getElementById("admin-forgot-btn");
+
+      function showToast(msg){
+        if(!toast) return;
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"), 1600);
+      }
+
+      if(forgot){
+        forgot.addEventListener("click", ()=>{
+          alert("Password resets are handled by the platform owner. Please contact your administrator.");
+        });
+      }
+
+      async function login(e){
+        e.preventDefault();
+        errEl.textContent = "";
+
+        const email = (emailEl.value || "").trim();
+        const password = passEl.value || "";
+
+        if(!email || !password){
+          errEl.textContent = "Please enter both email and password.";
+          return;
+        }
+
+        try{
+          const res = await fetch("/api/admin/login", {
+            method:"POST",
+            headers: { "Content-Type":"application/json" },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+
+          if(!data.ok){
+            errEl.textContent = data.error || "Login failed.";
+            return;
+          }
+
+          try { localStorage.setItem("twAdminAuthed","1"); } catch(_){}
+          showToast("Logged in. Redirecting…");
+          setTimeout(()=>{ window.location.href = "/admin/admin-dashboard"; }, 700);
+        }catch(err){
+          console.error(err);
+          errEl.textContent = "Network error. Please try again.";
+        }
+      }
+
+      if(form){
+        form.addEventListener("submit", login);
+        // Enter key support even if form novalidate
+        form.addEventListener("keydown", (ev)=>{
+          if(ev.key === "Enter"){
+            // allow native submit for inputs, but ensure we run once
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

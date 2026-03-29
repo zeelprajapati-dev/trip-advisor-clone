@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TripWise • Admin Alerts</title>
+
+  <!-- Same global CSS as admin-login / admin-dashboard -->
+  <link rel="stylesheet" href="/css/style.css"/>
+
+  <style>
+    :root{
+      /* identical palette to admin-login/admin-dashboard */
+      --bg:#020617;
+      --card:#020617f2;
+      --border:#1f2937;
+      --muted:#9ca3af;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 15% -10%, rgba(37,99,235,.22), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(37,99,235,.18), transparent 46%),
+        var(--bg);
+      color:#e5e7eb;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Poppins",sans-serif;
+    }
+
+    /* top nav (consistent) */
+    .nav .links .link.active{ color:#60a5fa; font-weight:600; }
+
+    /* page shell */
+    .adm-shell{ max-width:1150px; margin:96px auto 40px; padding:0 20px 28px; }
+
+    /* header row */
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .adm-title{ font-size:26px; font-weight:700; letter-spacing:.2px; margin:0; }
+    .adm-sub{ font-size:14px; color:var(--muted); margin-top:4px; }
+
+    /* admin tabs (same style as dashboard) */
+    .adm-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .adm-tab{
+      border:1px solid rgba(148,163,184,.45);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      font-size:13px; font-weight:500;
+      padding:8px 12px; border-radius:999px;
+      text-decoration:none;
+      transition:border-color .15s ease, background .15s ease, transform .1s ease;
+    }
+    .adm-tab:hover{border-color:rgba(148,163,184,.9);background:#0b1220;transform:translateY(-1px)}
+    .adm-tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); border-color:transparent;}
+
+    /* pills / buttons / inputs */
+    .logout{border:1px solid rgba(148,163,184,.5);background:transparent;color:#e5e7eb;padding:8px 14px;border-radius:999px;cursor:pointer}
+    .logout:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+    .btn{border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 14px 28px rgba(37,99,235,.45)}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#e5e7eb;border:1px solid rgba(148,163,184,.5)}
+    .btn-ghost:hover{border-color:rgba(148,163,184,.9);background:#0b1220}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+
+    .select, .input{
+      background:#0b1220;border:1px solid var(--border);color:#e5e7eb;
+      border-radius:12px;padding:8px 12px;font-size:13px;outline:none;
+    }
+    .input::placeholder{color:#6b7280}
+
+    /* cards */
+    .card{
+      background: linear-gradient(145deg,#030712,#0b1220);
+      border:1px solid rgba(15,23,42,.9);
+      border-radius: 22px;
+      box-shadow: 0 26px 60px rgba(2,6,23,.85);
+      padding: 18px;
+    }
+    .card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+    .card-title{font-size:16px;font-weight:600}
+    .card-sub{font-size:12px;color:var(--muted)}
+
+    /* KPI row */
+    .kpis{
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0 22px
+    }
+    @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media (max-width:700px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .kpi{
+      background: radial-gradient(circle at top left, rgba(37,99,235,.06), transparent 50%), #0b1220;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow: 0 10px 26px rgba(2,6,23,.6);
+    }
+    .kpi-title{font-size:12px;color:var(--muted)}
+    .kpi-value{font-size:22px;font-weight:700;margin-top:4px}
+    .kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+    /* layout grid: three columns on wide (crit/ops/sys) */
+    .grid{
+      display:grid;grid-template-columns:1.2fr 1.2fr 1fr;gap:16px
+    }
+    @media (max-width:1100px){.grid{grid-template-columns:1fr}}
+    .list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+    .item{
+      border:1px solid var(--border);border-radius:14px;padding:12px;background:#0b1220;
+      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+      box-shadow: 0 10px 24px rgba(2,6,23,.6);
+    }
+    .item h4{margin:0 0 4px;font-size:14px}
+    .item p{margin:0;font-size:12px;color:var(--muted)}
+    .row-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+    /* badges / severities */
+    .badge{font-size:11px;border:1px solid rgba(148,163,184,.45);padding:4px 8px;border-radius:999px;color:#cbd5e1;background:#0b1220}
+    .sev-critical{background:rgba(239,68,68,.14);color:#f87171;border-color:rgba(239,68,68,.32)}
+    .sev-high{background:rgba(245,158,11,.16);color:#fbbf24;border-color:rgba(245,158,11,.35)}
+    .sev-medium{background:rgba(59,130,246,.16);color:#93c5fd;border-color:rgba(59,130,246,.35)}
+    .sev-low{background:rgba(34,197,94,.18);color:#4ade80;border-color:rgba(34,197,94,.35)}
+
+    /* toast */
+    .toast{
+      position:fixed;left:50%;bottom:24px;transform:translate(-50%,8px);
+      padding:10px 16px;border-radius:999px;background:rgba(15,23,42,.96);
+      border:1px solid rgba(148,163,184,.6);color:#e5e7eb;font-size:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.16s;z-index:40
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+
+    .controls{display:flex;flex-wrap:wrap;gap:8px}
+    .controls > *{min-height:38px}
+    .spacer{flex:1}
+    .small{font-size:12px;color:#94a3b8}
+  </style>
+</head>
+<body>
+  <!-- Top Navigation (same as admin-login/dashboard) -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div class="name">TripWise</div>
+      </div>
+      <div class="links">
+        <a href="/" class="link">Dashboard</a>
+        <a href="/admin/login" class="link active">Admin</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="adm-shell">
+    <!-- Header -->
+    <section class="adm-head">
+      <div>
+        <h1 class="adm-title">Alerts</h1>
+        <div class="adm-sub">Monitor failed payments, cancellations, low availability, disputes & policy issues.</div>
+
+        <div class="adm-tabs">
+          <a class="adm-tab" href="/admin/admin-dashboard">Dashboard</a>
+          <a class="adm-tab" href="/admin/admin-agents">Agents</a>
+          <a class="adm-tab" href="/admin/admin-approvals">Approvals</a>
+          <a class="adm-tab" href="/admin/admin-customers">Customers</a>
+          <a class="adm-tab" href="/admin/admin-trips">Trips</a>
+          <a class="adm-tab" href="/admin/admin-bookings">Bookings</a>
+          <a class="adm-tab" href="/admin/admin-payments">Payments</a>
+          <a class="adm-tab active" href="/admin/admin-alerts">Alerts</a>
+        </div>
+      </div>
+
+      <button id="adm-logout-btn" class="logout">Logout</button>
+    </section>
+
+    <!-- KPI BAR -->
+    <section class="kpis">
+      <article class="kpi">
+        <div class="kpi-title">Failed payments</div>
+        <div id="al-kpi-failed" class="kpi-value">--</div>
+        <div class="kpi-sub">Gateway declines</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Cancellations (7d)</div>
+        <div id="al-kpi-cancel" class="kpi-value">--</div>
+        <div class="kpi-sub">Booking cancellations</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Low availability trips</div>
+        <div id="al-kpi-low" class="kpi-value">--</div>
+        <div class="kpi-sub">Seats below threshold</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Refunds pending</div>
+        <div id="al-kpi-refund" class="kpi-value">--</div>
+        <div class="kpi-sub">Awaiting action</div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-title">Open disputes</div>
+        <div id="al-kpi-dispute" class="kpi-value">--</div>
+        <div class="kpi-sub">Chargebacks/disputes</div>
+      </article>
+    </section>
+
+    <!-- Filters -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">Filters</div>
+        <div class="card-sub">Search, severity, type and date range</div>
+      </div>
+      <div class="controls">
+        <input id="al-q" class="input" type="search" placeholder="Search text, customer, trip, agent…"/>
+        <select id="al-sev" class="select">
+          <option value="">Any severity</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <select id="al-type" class="select">
+          <option value="">Any type</option>
+          <option value="payment">Payment</option>
+          <option value="booking">Booking</option>
+          <option value="trip">Trip</option>
+          <option value="policy">Policy</option>
+          <option value="system">System</option>
+        </select>
+        <input id="al-from" class="input" type="date" title="From"/>
+        <input id="al-to" class="input" type="date" title="To"/>
+        <button id="al-apply" class="btn btn-ghost">Apply</button>
+        <div class="spacer"></div>
+        <button id="al-export" class="btn btn-primary">Export CSV</button>
+      </div>
+    </section>
+
+    <!-- GRID: Critical / Operational / System -->
+    <section class="grid" style="margin-top:16px;">
+      <!-- Critical -->
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">Critical</div>
+          <div id="al-crit-sub" class="card-sub">—</div>
+        </div>
+        <div id="al-crit-list" class="list">
+          <div class="item">
+            <div>
+              <h4>Loading critical alerts…</h4>
+              <p>Payment failures & disputes appear here.</p>
+            </div>
+            <span class="badge sev-critical">Critical</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Operational -->
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">Operational</div>
+          <div id="al-ops-sub" class="card-sub">—</div>
+        </div>
+        <div id="al-ops-list" class="list">
+          <div class="item">
+            <div>
+              <h4>Loading operational alerts…</h4>
+              <p>Cancellations, low availability & agent issues.</p>
+            </div>
+            <span class="badge sev-high">High</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- System / Policy -->
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">System & Policy</div>
+          <div id="al-sys-sub" class="card-sub">—</div>
+        </div>
+        <div id="al-sys-list" class="list">
+          <div class="item">
+            <div>
+              <h4>Loading system/policy alerts…</h4>
+              <p>KYC pending, agents suspended, config warnings.</p>
+            </div>
+            <span class="badge sev-medium">Medium</span>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="adm-toast" class="toast">Saved</div>
+
+  <script>
+    (function(){
+      const logoutBtn = document.getElementById("adm-logout-btn");
+      if (logoutBtn){
+        logoutBtn.addEventListener("click", async ()=>{
+          try{ await fetch("/api/admin/logout", { method:"POST" }); }catch(_){}
+          window.location.href="/admin/login";
+        });
+      }
+
+      // KPI els
+      const kFailed  = document.getElementById("al-kpi-failed");
+      const kCancel  = document.getElementById("al-kpi-cancel");
+      const kLow     = document.getElementById("al-kpi-low");
+      const kRefund  = document.getElementById("al-kpi-refund");
+      const kDispute = document.getElementById("al-kpi-dispute");
+
+      // Filters
+      const qEl    = document.getElementById("al-q");
+      const sevEl  = document.getElementById("al-sev");
+      const typeEl = document.getElementById("al-type");
+      const fromEl = document.getElementById("al-from");
+      const toEl   = document.getElementById("al-to");
+      const applyEl= document.getElementById("al-apply");
+      const exportEl= document.getElementById("al-export");
+
+      // Lists & subs
+      const critList = document.getElementById("al-crit-list");
+      const opsList  = document.getElementById("al-ops-list");
+      const sysList  = document.getElementById("al-sys-list");
+      const critSub  = document.getElementById("al-crit-sub");
+      const opsSub   = document.getElementById("al-ops-sub");
+      const sysSub   = document.getElementById("al-sys-sub");
+
+      // Toast
+      const toast = document.getElementById("adm-toast");
+      function showToast(msg){
+        toast.textContent = msg || "Saved";
+        toast.classList.add("show");
+        setTimeout(()=>toast.classList.remove("show"), 1400);
+      }
+
+      // Helpers
+      function qs(params){
+        const usp = new URLSearchParams();
+        Object.entries(params).forEach(([k,v])=>{
+          if(v !== undefined && v !== null && String(v).trim() !== "") usp.set(k, v);
+        });
+        return usp.toString() ? ("?" + usp.toString()) : "";
+      }
+      async function apiGet(url){
+        try{ const r = await fetch(url); return await r.json(); }
+        catch(e){ return { ok:false, error:e.message }; }
+      }
+      async function apiPatch(url, body){
+        try{
+          const r = await fetch(url, { method:"PATCH", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body||{}) });
+          return await r.json();
+        }catch(e){ return { ok:false, error:e.message }; }
+      }
+
+      function renderItem({title, desc, meta, severity, actions}){
+        const sevMap = { critical:"sev-critical", high:"sev-high", medium:"sev-medium", low:"sev-low" };
+        const sevCls = sevMap[(severity||"").toLowerCase()] || "sev-medium";
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div>
+            <h4>${title || "Alert"}</h4>
+            <p>${desc || ""}</p>
+            ${meta ? `<p class="small" style="margin-top:6px;">${meta}</p>` : ""}
+          </div>
+          <div class="row-actions">
+            <span class="badge ${sevCls}" title="Severity">${(severity||"Medium").replace(/^\w/, c=>c.toUpperCase())}</span>
+            ${(actions||[]).map(a=>`
+              <button class="btn ${a.variant||'btn-ghost'}" data-action="${a.id}" ${a.href?`data-href="${a.href}"`:''}>${a.label}</button>
+            `).join("")}
+          </div>
+        `;
+        return div;
+      }
+
+      function renderList(container, subEl, items, emptyText, severityHint){
+        if(!Array.isArray(items) || items.length===0){
+          container.innerHTML = `
+            <div class="item">
+              <div>
+                <h4>${emptyText}</h4>
+                <p>${severityHint || ""}</p>
+              </div>
+              <span class="badge">OK</span>
+            </div>`;
+          subEl.textContent = "No open items";
+          return;
+        }
+        container.innerHTML = "";
+        subEl.textContent = items.length + " open item" + (items.length>1?"s":"");
+        items.forEach(i => container.appendChild(renderItem(i)));
+      }
+
+      // Load KPIs from /api/admin/summary
+      async function loadKPIs(){
+        const sum = await apiGet("/api/admin/summary");
+        if(!sum.ok || !sum.cards){
+          kFailed.textContent = kCancel.textContent = kLow.textContent = kRefund.textContent = kDispute.textContent = "--";
+          return;
+        }
+        const c = sum.cards;
+        kFailed.textContent  = c.alerts?.paymentFailed ?? 0;
+        kCancel.textContent  = c.alerts?.cancellations ?? 0;
+        kLow.textContent     = c.trips?.lowAvailability ?? 0;
+        kRefund.textContent  = c.alerts?.refundRequests ?? 0;
+        // If you track disputes in payments summary, map it here; fallback 0
+        kDispute.textContent = c.alerts?.disputesOpen ?? 0;
+      }
+
+      // Compose alerts feed
+      async function loadAlerts(){
+        // Try a dedicated alerts endpoint first (optional)
+        const filters = {
+          q:(qEl.value||"").trim(),
+          severity:sevEl.value||"",
+          type:typeEl.value||"",
+          from:fromEl.value||"",
+          to:toEl.value||""
+        };
+        const maybe = await apiGet("/api/admin/alerts" + qs(filters));
+
+        // If implemented, use it
+        if(maybe.ok && maybe.alerts){
+          const crit = (maybe.alerts.critical||[]);
+          const ops  = (maybe.alerts.operational||[]);
+          const sys  = (maybe.alerts.system||[]);
+          renderList(critList, critSub, crit, "No critical alerts", "Payment failures & disputes would appear here.");
+          renderList(opsList,  opsSub,  ops,  "No operational alerts", "Cancellations & low availability would appear here.");
+          renderList(sysList,  sysSub,  sys,  "No system/policy alerts", "KYC, suspended agents or config warnings would appear here.");
+          return;
+        }
+
+        // Fallback: derive from summary + activity
+        const sum = await apiGet("/api/admin/summary");
+        const act = await apiGet("/api/admin/activity");
+
+        const crit = [];
+        const ops  = [];
+        const sys  = [];
+
+        // From activity: payment failures, disputes, cancellations
+        if(act.ok && Array.isArray(act.recentBookings)){
+          act.recentBookings.forEach(b=>{
+            const pay = (b.paymentStatus||"").toLowerCase();
+            const st  = (b.status||"").toLowerCase();
+
+            if(pay === "failed"){
+              crit.push({
+                title:`Payment failed – ${b.customerName || "Customer"}`,
+                desc:`${b.tripTitle || "Trip"} ${b.route ? "• " + b.route : ""}`,
+                meta:`Amount: ₹${(b.totalAmount||0).toLocaleString("en-IN")} • Created: ${new Date(b.createdAt||Date.now()).toLocaleString()}`,
+                severity:"Critical",
+                actions:[
+                  { id:"viewBooking", label:"View booking", variant:"btn-primary" },
+                  { id:"markResolved", label:"Mark resolved", variant:"btn-ghost" }
+                ]
+              });
+            }
+            if(st === "cancelled"){
+              ops.push({
+                title:`Booking cancelled – ${b.customerName || "Customer"}`,
+                desc:`${b.tripTitle || "Trip"} ${b.route ? "• " + b.route : ""}`,
+                meta:`Passengers: ${b.passengers||0} • Created: ${new Date(b.createdAt||Date.now()).toLocaleString()}`,
+                severity:"High",
+                actions:[
+                  { id:"viewBooking", label:"View booking", variant:"btn-primary" },
+                  { id:"markResolved", label:"Mark resolved", variant:"btn-ghost" }
+                ]
+              });
+            }
+          });
+        }
+
+        // From summary: counts → create representative items so UI is informative
+        if(sum.ok && sum.cards){
+          const lowAvail = sum.cards.trips?.lowAvailability ?? 0;
+          if(lowAvail > 0){
+            ops.push({
+              title:`${lowAvail} trip${lowAvail>1?"s":""} have low availability`,
+              desc:`Seats below threshold on popular routes.`,
+              meta:`Action: review capacity & hide sold-out dates`,
+              severity:"High",
+              actions:[
+                { id:"openTrips", label:"Open trips", variant:"btn-primary" },
+                { id:"mute7", label:"Mute 7d", variant:"btn-ghost" }
+              ]
+            });
+          }
+          const refunds = sum.cards.alerts?.refundRequests ?? 0;
+          if(refunds > 0){
+            crit.push({
+              title:`${refunds} refund request${refunds>1?"s":""} pending`,
+              desc:`Customers are awaiting refund action.`,
+              meta:`Go to Payments → Refunds`,
+              severity:"Critical",
+              actions:[
+                { id:"openPayments", label:"Open payments", variant:"btn-primary" },
+                { id:"markResolved", label:"Mark resolved", variant:"btn-ghost" }
+              ]
+            });
+          }
+          // Example policy/system aggregation:
+          const pendingAgents = sum.cards.users?.pendingApprovalAgents ?? 0;
+          if(pendingAgents > 0){
+            sys.push({
+              title:`${pendingAgents} agent application${pendingAgents>1?"s":""} pending`,
+              desc:`Approve or reject new agents.`,
+              meta:`Go to Approvals`,
+              severity:"Medium",
+              actions:[
+                { id:"openApprovals", label:"Open approvals", variant:"btn-primary" },
+                { id:"mute7", label:"Mute 7d", variant:"btn-ghost" }
+              ]
+            });
+          }
+        }
+
+        renderList(critList, critSub, crit, "No critical alerts", "Payment failures, disputes or urgent refunds would appear here.");
+        renderList(opsList,  opsSub,  ops,  "No operational alerts", "Cancellations & low availability would appear here.");
+        renderList(sysList,  sysSub,  sys,  "No system/policy alerts", "KYC, suspended agents or config warnings would appear here.");
+      }
+
+      // Row actions (works for both dedicated alerts API results and derived items)
+      document.addEventListener("click", async (e)=>{
+        const btn = e.target.closest(".row-actions .btn");
+        if(!btn) return;
+        const action = btn.dataset.action;
+
+        if(action === "markResolved"){
+          // If you implement: PATCH /api/admin/alerts/:id { status:"resolved" }
+          // We don’t have IDs in derived alerts, so just show toast & reload.
+          showToast("Marked resolved");
+          await loadKPIs(); await loadAlerts();
+          return;
+        }
+        if(action === "mute7"){
+          // If you implement: PATCH /api/admin/alerts/:id { muteForDays:7 }
+          showToast("Muted for 7 days");
+          return;
+        }
+        if(action === "openPayments"){
+          window.location.href = "/admin/admin-payments";
+          return;
+        }
+        if(action === "openTrips"){
+          window.location.href = "/admin/admin-trips";
+          return;
+        }
+        if(action === "openApprovals"){
+          window.location.href = "/admin/admin-approvals";
+          return;
+        }
+        if(action === "viewBooking"){
+          // If you have a booking admin details page, navigate there. Otherwise go to bookings list.
+          window.location.href = "/admin/admin-bookings";
+          return;
+        }
+      });
+
+      // Filters (if you implement /api/admin/alerts they will be applied; otherwise harmless)
+      document.getElementById("al-apply").addEventListener("click", loadAlerts);
+      qEl.addEventListener("keydown", e=>{ if(e.key==="Enter"){ loadAlerts(); } });
+
+      // Export CSV (derived from current lists in DOM)
+      document.getElementById("al-export").addEventListener("click", ()=>{
+        function extract(container){
+          const arr = [];
+          container.querySelectorAll(".item").forEach(el=>{
+            const title = el.querySelector("h4")?.textContent || "";
+            const desc  = el.querySelector("p")?.textContent || "";
+            const meta  = el.querySelector(".small")?.textContent || "";
+            const sev   = el.querySelector(".badge")?.textContent || "";
+            arr.push({title,desc,meta,sev});
+          });
+          return arr;
+        }
+        const rows = [
+          ["Section","Severity","Title","Description","Meta"]
+        ];
+        extract(critList).forEach(a=>rows.push(["Critical", a.sev, a.title, a.desc, a.meta]));
+        extract(opsList).forEach(a=>rows.push(["Operational", a.sev, a.title, a.desc, a.meta]));
+        extract(sysList).forEach(a=>rows.push(["System/Policy", a.sev, a.title, a.desc, a.meta]));
+
+        if(rows.length===1){ showToast("Nothing to export"); return; }
+
+        const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = `tripwise-alerts-${Date.now()}.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        showToast("CSV exported");
+      });
+
+      // Initial load
+      loadKPIs();
+      loadAlerts();
+    })();
+  </script>
+</body>
+</html>
